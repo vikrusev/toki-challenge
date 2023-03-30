@@ -1,24 +1,35 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-function App() {
+const App: React.FC = () => {
+  const data = [
+    { name: 'Jan', value: 100 },
+    { name: 'Feb', value: 200 },
+    { name: 'Mar', value: 150 },
+    { name: 'Apr', value: 350 },
+    { name: 'May', value: 250 },
+    { name: 'Jun', value: 450 },
+    { name: 'Jul', value: 400 },
+    { name: 'Aug', value: 300 },
+    { name: 'Sep', value: 500 },
+    { name: 'Oct', value: 550 },
+    { name: 'Nov', value: 700 },
+    { name: 'Dec', value: 800 },
+  ];
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Statistical Data</h1>
+
+      <LineChart width={600} height={300} data={data}>
+        <XAxis dataKey="name" />
+        <YAxis />
+        <CartesianGrid strokeDasharray="3 3" />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="value" stroke="#8884d8" activeDot={{ r: 8 }} />
+      </LineChart>
     </div>
   );
 }
