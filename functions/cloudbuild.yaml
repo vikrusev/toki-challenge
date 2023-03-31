@@ -13,4 +13,4 @@ steps:
   args: [ cp,'package-lock.json', 'dist' ]
 - name: gcr.io/cloud-builders/gcloud
   dir: 'functions'
-  args: [ 'functions', 'deploy', 'hello-data-function', '--set-secrets', '/secrets/toki-service-account=toki-service-account:latest', '--gen2', '--allow-unauthenticated', '--region', 'europe-west1', '--runtime', 'nodejs18', '--trigger-http', '--source', 'dist', '--entry-point', 'helloData' ]
+  args: [ 'functions', 'deploy', 'hello-data-function', '--set-secrets', '/secrets/toki-service-account=toki-service-account:latest', '--set-env-vars', 'CI_PROD=true', '--gen2', '--allow-unauthenticated', '--region', 'europe-west1', '--runtime', 'nodejs18', '--trigger-http', '--source', 'dist', '--entry-point', 'helloData' ]

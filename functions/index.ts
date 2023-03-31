@@ -1,12 +1,10 @@
-const { Storage: Storage2 } = require("@google-cloud/storage");
+import getServiceAccountStorage from "./getServiceAccountStorage";
 
 const helloData = async (req: any, res: any) => {
-  // Instantiate a new client using the service account key file
-  const storage = new Storage2({
-    keyFilename: "/secrets/toki-service-account",
-  });
+  // instantiate a new client based on the CI_PROD env variable
+  const storage = await getServiceAccountStorage(Boolean(process.env.CI_PROD));
 
-  // Use the client to access Google Cloud Storage
+  // use the client to access Google Cloud Storage
   const bucketName = "toki-take-home.appspot.com";
   const [files] = await storage.bucket(bucketName).getFiles();
   console.log(`Retrieved all files in ${bucketName}:`);
