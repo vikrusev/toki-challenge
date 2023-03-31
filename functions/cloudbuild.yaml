@@ -5,6 +5,12 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   dir: 'functions'
   args: [ 'run', 'compile' ]
+- name: 'bash'
+  dir: 'functions'
+  args: [ cp,'package.json', 'dist' ]
+- name: 'bash'
+  dir: 'functions'
+  args: [ cp,'package-lock.json', 'dist' ]
 - name: gcr.io/cloud-builders/gcloud
   dir: 'functions'
-  args: [ 'functions', 'deploy', 'hello-data-function', '--region', 'europe-west1', '--runtime', 'nodejs18', '--trigger-http', '--source', 'dist', '--entry-point', 'helloData']
+  args: [ 'functions', 'deploy', 'hello-data-function', '--region', 'europe-west1', '--runtime', 'nodejs18', '--trigger-http', '--source', 'dist', '--entry-point', 'helloData' ]
