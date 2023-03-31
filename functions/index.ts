@@ -1,17 +1,20 @@
-import getServiceAccountStorage from "./getServiceAccountStorage";
+import getServiceAccountBucket from "./getServiceAccountBucket";
+
+const BUCKET_NAME = "toki-take-home.appspot.com";
 
 const helloData = async (req: any, res: any) => {
   // instantiate a new client based on the CI_PROD env variable
-  const storage = await getServiceAccountStorage(Boolean(process.env.CI_PROD));
-
-  // use the client to access Google Cloud Storage
-  const bucketName = "toki-take-home.appspot.com";
-  const [files] = await storage.bucket(bucketName).getFiles();
-  console.log(`Retrieved all files in ${bucketName}:`);
-
-  res.send(
-    `Available files: \r\n ${files.map((f: any) => f.name).join("\r\n")}`
+  const storageBucket = await getServiceAccountBucket(
+    BUCKET_NAME,
+    Boolean(process.env.CI_PROD)
   );
+
+  // example of downloading contents of a file
+  const [files] = await storageBucket.getFiles();
+
+  const contents = await storageBucket.file(files[160].name).download();
+
+  res.send(`Contents in file ${contents}:`);
 };
 
 export { helloData };
