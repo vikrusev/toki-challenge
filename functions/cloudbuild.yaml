@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/npm'
+  dir: 'functions'
+  args: [ 'ci' ]
+- name: 'gcr.io/cloud-builders/npm'
+  dir: 'functions'
+  args: [ 'run', 'compile' ]
