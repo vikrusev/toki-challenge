@@ -1,6 +1,6 @@
 const { Storage: Storage2 } = require("@google-cloud/storage");
 
-const functions = async (req: any, res: any) => {
+const helloData = async (req: any, res: any) => {
   // Instantiate a new client using the service account key file
   const storage = new Storage2({
     keyFilename: "/secrets/toki-service-account",
@@ -16,4 +16,4 @@ const functions = async (req: any, res: any) => {
   );
 };
 
-export { functions };
+export { helloData };

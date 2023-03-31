@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc",
-    "debug": "node --inspect node_modules/@google-cloud/functions-framework/build/src/main.js --source=./dist --target=functions",
+    "debug": "node --inspect node_modules/@google-cloud/functions-framework/build/src/main.js --source=./dist --target=helloData",
     "watch": "concurrently \"npm run compile -- --watch\" \"nodemon --watch ./dist/ --exec npm run debug\""
   },
   "author": "",

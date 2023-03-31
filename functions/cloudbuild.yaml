@@ -5,3 +5,6 @@ steps:
 - name: 'gcr.io/cloud-builders/npm'
   dir: 'functions'
   args: [ 'run', 'compile' ]
+- name: gcr.io/cloud-builders/gcloud
+  dir: 'functions'
+  args: [ 'functions', 'deploy', 'hello-data-function', '--region', 'europe-west1', '--runtime', 'nodejs18', '--trigger-http', '--source', 'dist', '--entry-point', 'helloData']
