@@ -1,6 +1,6 @@
 import getServiceAccountBucket from "./getServiceAccountBucket";
 
-const BUCKET_NAME = "toki-take-home.appspot.com";
+import { BUCKET_NAME } from "./constants/constants";
 
 const helloData = async (req: any, res: any) => {
   // instantiate a new client based on the CI_PROD env variable

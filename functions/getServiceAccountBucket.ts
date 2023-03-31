@@ -1,6 +1,11 @@
 import { Storage, Bucket, StorageOptions } from "@google-cloud/storage";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 
+import {
+  SECRET_NAME,
+  SECRET_KEYFILENAME_PATH_PROD,
+} from "./constants/constants";
+
 /**
  * Initialize connection to Secret Manager
  * And retrieve configuration data for TOKI's Service Account
@@ -12,8 +17,7 @@ const getConfigurationFromSecretManager = async (): Promise<StorageOptions> => {
   const client = new SecretManagerServiceClient();
 
   // define the name of the secret
-  const secretName = "toki-service-account";
-  const secretFullPath = `projects/toki-challenge-382218/secrets/${secretName}/versions/latest`;
+  const secretFullPath = `projects/toki-challenge-382218/secrets/${SECRET_NAME}/versions/latest`;
 
   // get secret version data
   const [version] = await client.accessSecretVersion({ name: secretFullPath });
@@ -59,7 +63,7 @@ const getServiceAccountBucket = async (
   // production run will have the config file mounted in /secrets
   if (isProduction) {
     return getStorageBucket(bucketName, {
-      keyFilename: "/secrets/toki-service-account",
+      keyFilename: `${SECRET_KEYFILENAME_PATH_PROD}/${SECRET_NAME}`,
     });
   }
 
