@@ -1,7 +1,7 @@
 import { Storage, Bucket, StorageOptions } from "@google-cloud/storage";
 
 import { BUCKET_NAME } from "../config/constants";
-import { UserInput } from "../dtos/UserInput.dto";
+import { InputTime, UserInput } from "../dtos/UserInput.dto";
 import { addPadding, removePadding } from "./helpers/datePrefix.helper";
 
 class CloudStorageClient {
@@ -43,7 +43,10 @@ class CloudStorageClient {
 
     // filter the filenames we want to download
     const toDownloadFiles = availableCloudFiles.filter((file) => {
+      // check if the file is for prices
       if (file.name.startsWith(timePrefixPrices)) return true;
+
+      // check if the file is for usage and is for some of the requested metering points
       if (meteringPointIds && file.name.startsWith(`${timePrefixUsage}/`)) {
         const pointId = file.name.match(/(\d+)\.jsonl$/)![1];
         return meteringPointIds.split(",").includes(pointId);
@@ -65,9 +68,7 @@ class CloudStorageClient {
    * Generate filepath prefix w/ times for prices
    * @param {Time} time - the requested by the client time of data - year, month and day
    */
-  private timePaddedPrefixPrices = (
-    time: Pick<UserInput, "year" | "month" | "day">
-  ): string => {
+  private timePaddedPrefixPrices = (time: InputTime): string => {
     let prefix = `${this.filepathPrefixes.prices}/${time.year}`;
     if (time.month) prefix += `/${addPadding(time.month)}`;
     if (time.day) prefix += `/${addPadding(time.day)}`;
@@ -79,9 +80,7 @@ class CloudStorageClient {
    * Generate filepath prefix w/ times for usage
    * @param {Time} time - the requested by the client time of data - year, month and day
    */
-  private timePaddedPrefixUsage = (
-    time: Pick<UserInput, "year" | "month" | "day">
-  ): string => {
+  private timePaddedPrefixUsage = (time: InputTime): string => {
     let prefix = `${this.filepathPrefixes.usage}/${time.year}`;
     if (time.month) prefix += `/${addPadding(time.month)}`;
     if (time.day) prefix += `/${removePadding(time.day)}`;
