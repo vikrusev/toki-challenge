@@ -1,6 +1,7 @@
 import CloudStorageClient from "./CloudStorageClient";
 import { BUCKET_NAME } from "./constants/constants";
 
+import userInputValidator from "./business/userInput.validator";
 import getServiceAccountBucket from "./getServiceAccountBucket";
 
 /**
@@ -19,6 +20,10 @@ import getServiceAccountBucket from "./getServiceAccountBucket";
  * Providing METERING_POINT_ID is optional for all variants from above
  */
 const helloData = async (req: any, res: any) => {
+  if (!userInputValidator(req.query)) {
+    throw new Error("User Input is invalid");
+  }
+
   // TODO move initilization to CloudStorageClient
   // instantiate a new client based on the CI_PROD env variable
   const storageBucket = await getServiceAccountBucket(
