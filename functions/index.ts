@@ -17,7 +17,7 @@ import validationSchema from "./business/validators/userInput.validator";
  *    - returns all hours of a DAY in a MONTH in YEAR w/ actual values of the electricity price and metering point(s) usage
  * Providing METERING_POINT_ID is optional for all variants from above
  */
-const helloData = async (req: any, res: any) => {
+const mainEntrypoint = async (req: any, res: any) => {
   // check if user input is valid
   const isUserInputValid = validationSchema.validate(req.query);
   if (isUserInputValid.error) {
@@ -37,4 +37,4 @@ const helloData = async (req: any, res: any) => {
   res.send(`${responseData}`);
 };
 
-export { helloData };
+export { mainEntrypoint };
