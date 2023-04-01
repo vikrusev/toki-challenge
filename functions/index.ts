@@ -1,6 +1,6 @@
 import CloudStorageClient from "./CloudStorageClient";
-
-import userInputValidator from "./business/userInput.validator";
+import isUserInputValid from "./business/userInput.validator";
+import getStorageOptions from "./getStorageOptions";
 
 /**
  * Retrieve data from usage/ and prices/ objects from TOKI's
@@ -18,12 +18,16 @@ import userInputValidator from "./business/userInput.validator";
  * Providing METERING_POINT_ID is optional for all variants from above
  */
 const helloData = async (req: any, res: any) => {
-  if (!userInputValidator(req.query)) {
+  // check if user input is valid
+  if (!isUserInputValid(req.query)) {
     throw new Error("User Input is invalid");
   }
 
+  // read options for Cloud Storage
+  const storageOptions = await getStorageOptions(Boolean(process.env.CI_PROD));
+
   // build a CloudStorageClient to work w/ requested data
-  const cloudStorageClient = await CloudStorageClient.buildClient();
+  const cloudStorageClient = new CloudStorageClient(storageOptions);
 
   // get user requested data
   const responseData = await cloudStorageClient.getUserData(req.query);

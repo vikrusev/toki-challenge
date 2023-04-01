@@ -1,9 +1,7 @@
-import { Bucket } from "@google-cloud/storage";
+import { Storage, Bucket, StorageOptions } from "@google-cloud/storage";
 
 import { BUCKET_NAME } from "./constants/constants";
 import { UserInput, Time } from "./models/UserInput.model";
-
-import getServiceAccountBucket from "./getServiceAccountBucket";
 
 class CloudStorageClient {
   // a Bucket connected to TOKI's Google Cloud Storage
@@ -15,71 +13,18 @@ class CloudStorageClient {
     usage: "usage",
   };
 
-  /**
-   * Init CloudStorageClient object by making a deep copy of the passed bucket,
-   * because otherwise it will be just a reference to the outside bucket
-   *
-   * We use a static build function to instantiate an object of this class
-   * because we want this.bucket to be created from within the object
-   *
-   * This way we are preserving the encapsulation of private members
-   *
-   * We cannot have an async constructor for this and we do not want to have
-   * an additional init() method to create the bucket reference
-   * @param {Bucket} bucket - bucket object to Google Cloud
-   */
-  private constructor(bucket: Bucket) {
-    this.bucket = Object.assign({}, bucket, {
-      metadata: { ...bucket.metadata },
-      storage: { ...bucket.storage },
-    });
+  constructor(storageOptions: StorageOptions) {
+    this.bucket = this.getStorageBucket(BUCKET_NAME, storageOptions);
   }
 
   /**
-   * The idea is not to break encapsulation by having and exposed reference
-   * to the private member this.bucket
-   * @returns a Promise of a CloudStorageClient initialisation
+   * Constructs a Storage client and returns a reference to TOKI's Google Cloud Storage Bucket
+   * @param {string} bucketName - name of bucket
+   * @param {StorageOptions} options
+   * @returns a reference to a bucket
    */
-  static async buildClient() {
-    const storageBucket = await getServiceAccountBucket(
-      BUCKET_NAME,
-      Boolean(process.env.CI_PROD)
-    );
-
-    return new CloudStorageClient(storageBucket);
-  }
-
-  /**
-   * Gets requested by the client data
-   * This can be the prices and eventually usage for some time
-   * @param {UserInput} userInput - consisting of times and optional metering point ids
-   */
-  getUserData = async (userInput: UserInput) => {
-    // get price and eventually usage data
-    const filesData = await this.getFilesData(userInput);
-    return filesData;
-  };
-
-  /**
-   * Get either Daily, Monthly or Yearly data for the prices
-   * Monthly takes averages of the Daily
-   * Yearly takes averages of Monthly
-   * @param {UserInput} uesrInput - data of request
-   */
-  private getFilesData = async (userInput: UserInput) => {
-    if (userInput.year && userInput.month && userInput.day) {
-      return await this.downloadDailyData(userInput);
-    }
-
-    if (userInput.year && userInput.month) {
-      return await this.getMonthlyData();
-    }
-
-    if (userInput.year) {
-      return await this.getYearlyData();
-    }
-
-    throw new Error("User Input has on year specified.");
+  getStorageBucket = (bucketName: string, options: StorageOptions): Bucket => {
+    return new Storage(options).bucket(bucketName);
   };
 
   /**
@@ -88,24 +33,18 @@ class CloudStorageClient {
    * @returns an object w/ prices for the specific day and eventually
    *  the consumption of each of the given metering points
    */
-  private downloadDailyData = async ({
-    year,
-    month,
-    day,
-    meteringPointIds,
-  }: UserInput) => {
-    const timePrefixPrices = this.timePaddedPrefix({ year, month, day });
-    const timePrefixUsage = this.timePaddedPrefix({ year, month, day }, false);
+  getUserData = async ({ meteringPointIds, ...times }: UserInput) => {
+    const timePrefixPrices = this.timePaddedPrefixPrices(times);
+    const timePrefixUsage = this.timePaddedPrefixUsage(times);
+
     const pricesFile = `${this.filepathPrefixes.prices}/${timePrefixPrices}.jsonl`;
 
     // add usage files for each metering point id given
-    const usageFiles: { pointId: string | number; name: string }[] = [];
-    meteringPointIds?.split(",").forEach((pointId) =>
-      usageFiles.push({
+    const usageFiles =
+      meteringPointIds?.split(",").map((pointId) => ({
         pointId,
         name: `${this.filepathPrefixes.usage}/${timePrefixUsage}/${pointId}.jsonl`,
-      })
-    );
+      })) || [];
 
     // download files' data in memory
     const pricesFileData = await this.bucket.file(pricesFile).download();
@@ -124,12 +63,13 @@ class CloudStorageClient {
     };
   };
 
-  private getMonthlyData = () => {
-    throw new Error("Not yet implemented");
-  };
+  private timePaddedPrefixPrices = (
+    time: Pick<UserInput, "year" | "month" | "day">
+  ) => {
+    const addPadding = (value: Time | undefined) =>
+      value?.toString().padStart(2, "0");
 
-  private getYearlyData = () => {
-    throw new Error("Not yet implemented");
+    return `${time.year}/${addPadding(time.month)}/${addPadding(time.day)}`;
   };
 
   /**
@@ -138,21 +78,15 @@ class CloudStorageClient {
    * @param {boolean} isForPrice - prices have a trailing zero, usages do not
    * @returns a timePaddedPrefix for either a prices or usage file
    */
-  private timePaddedPrefix = (
-    time: Pick<UserInput, "year" | "month" | "day">,
-    isForPrice: boolean = true
+  private timePaddedPrefixUsage = (
+    time: Pick<UserInput, "year" | "month" | "day">
   ): string => {
-    const addPadding = (value: Time | undefined) => {
-      return value?.toString().padStart(2, "0");
-    };
+    const removePadding = (value: Time | undefined) =>
+      value && Number(value).toString();
 
-    const removePadding = (value: Time | undefined) => {
-      return value && Number(value).toString();
-    };
-
-    return isForPrice
-      ? `${time.year}/${addPadding(time.month)}/${addPadding(time.day)}`
-      : `${time.year}/${removePadding(time.month)}/${removePadding(time.day)}`;
+    return `${time.year}/${removePadding(time.month)}/${removePadding(
+      time.day
+    )}`;
   };
 }
 
