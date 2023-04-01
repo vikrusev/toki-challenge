@@ -1,10 +1,7 @@
 import { StorageOptions } from "@google-cloud/storage";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 
-import {
-  SECRET_NAME,
-  SECRET_KEYFILENAME_PATH_PROD,
-} from "./constants/constants";
+import { SECRET_NAME, SECRET_KEYFILENAME_PATH_PROD } from "./constants";
 
 /**
  * Retrieve TOKI's Google Storage Options

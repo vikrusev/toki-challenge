@@ -1,6 +1,6 @@
-import CloudStorageClient from "./CloudStorageClient";
-import isUserInputValid from "./business/userInput.validator";
-import getStorageOptions from "./getStorageOptions";
+import CloudStorageClient from "./business/CloudStorageClient";
+import isUserInputValid from "./business/validators/userInput.validator";
+import getStorageOptions from "./config/getStorageOptions";
 
 /**
  * Retrieve data from usage/ and prices/ objects from TOKI's

@@ -1,9 +1,10 @@
-import { UserInput } from "../models/UserInput.model";
+import { UserInput } from "../../dtos/UserInput.dto";
 
 /**
  * Checks if the user input is valid or not
  * TODO add additional checks for year, month and day
  * TODO e.g. they should be positive integers
+ * TODO add JOI
  * @param {UserInput} param0 consists of requested time and eventually metering point ids
  * @returns {boolean} if the input is valid or not
  */

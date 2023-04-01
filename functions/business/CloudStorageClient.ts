@@ -1,7 +1,7 @@
 import { Storage, Bucket, StorageOptions } from "@google-cloud/storage";
 
-import { BUCKET_NAME } from "./constants/constants";
-import { UserInput, Time } from "./models/UserInput.model";
+import { BUCKET_NAME } from "../config/constants";
+import { UserInput, Time } from "../dtos/UserInput.dto";
 
 class CloudStorageClient {
   // a Bucket connected to TOKI's Google Cloud Storage
