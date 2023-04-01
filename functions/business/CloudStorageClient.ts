@@ -1,7 +1,8 @@
 import { Storage, Bucket, StorageOptions } from "@google-cloud/storage";
 
 import { BUCKET_NAME } from "../config/constants";
-import { UserInput, Time } from "../dtos/UserInput.dto";
+import { UserInput } from "../dtos/UserInput.dto";
+import { addPadding, removePadding } from "./helpers/datePrefix.helper";
 
 class CloudStorageClient {
   // a Bucket connected to TOKI's Google Cloud Storage
@@ -28,65 +29,64 @@ class CloudStorageClient {
   };
 
   /**
-   * Download prices and eventually usage data files for a specific day
-   * @param {UserInput} param0 - defining the specific day and eventually the metering point ids
-   * @returns an object w/ prices for the specific day and eventually
-   *  the consumption of each of the given metering points
+   * Download prices and eventually usage data files for all days based on the user input
+   * @param {UserInput} param0 - defining time and eventually the metering point ids
+   * @returns an array w/ mapped filenames w/ their data
    */
   getUserData = async ({ meteringPointIds, ...times }: UserInput) => {
+    // prepare prefixes
     const timePrefixPrices = this.timePaddedPrefixPrices(times);
     const timePrefixUsage = this.timePaddedPrefixUsage(times);
 
-    const pricesFile = `${this.filepathPrefixes.prices}/${timePrefixPrices}.jsonl`;
+    // get all available files in the Cloud Storage
+    const [availableCloudFiles] = await this.bucket.getFiles();
 
-    // add usage files for each metering point id given
-    const usageFiles =
-      meteringPointIds?.split(",").map((pointId) => ({
-        pointId,
-        name: `${this.filepathPrefixes.usage}/${timePrefixUsage}/${pointId}.jsonl`,
-      })) || [];
+    // filter the filenames we want to download
+    const toDownloadFiles = availableCloudFiles.filter((file) => {
+      if (file.name.startsWith(timePrefixPrices)) return true;
+      if (meteringPointIds && file.name.startsWith(`${timePrefixUsage}/`)) {
+        const pointId = file.name.match(/(\d+)\.jsonl$/)![1];
+        return meteringPointIds.split(",").includes(pointId);
+      }
 
-    // download files' data in memory
-    const pricesFileData = await this.bucket.file(pricesFile).download();
-    const usageFilesData = await Promise.all(
-      usageFiles.map(async (file) => {
-        return {
-          pointId: file.pointId,
-          usageData: await this.bucket.file(file.name).download(),
-        };
-      })
+      return false;
+    });
+
+    // download the files
+    return await Promise.all(
+      toDownloadFiles.map(async (file) => ({
+        filename: file.name,
+        data: await file.download(),
+      }))
     );
-
-    return {
-      pricesFileData,
-      usageFilesData,
-    };
-  };
-
-  private timePaddedPrefixPrices = (
-    time: Pick<UserInput, "year" | "month" | "day">
-  ) => {
-    const addPadding = (value: Time | undefined) =>
-      value?.toString().padStart(2, "0");
-
-    return `${time.year}/${addPadding(time.month)}/${addPadding(time.day)}`;
   };
 
   /**
-   * Generate filepaths w/ prefixes + times for prices or usage files
+   * Generate filepath prefix w/ times for prices
    * @param {Time} time - the requested by the client time of data - year, month and day
-   * @param {boolean} isForPrice - prices have a trailing zero, usages do not
-   * @returns a timePaddedPrefix for either a prices or usage file
+   */
+  private timePaddedPrefixPrices = (
+    time: Pick<UserInput, "year" | "month" | "day">
+  ): string => {
+    let prefix = `${this.filepathPrefixes.prices}/${time.year}`;
+    if (time.month) prefix += `/${addPadding(time.month)}`;
+    if (time.day) prefix += `/${addPadding(time.day)}`;
+
+    return prefix;
+  };
+
+  /**
+   * Generate filepath prefix w/ times for usage
+   * @param {Time} time - the requested by the client time of data - year, month and day
    */
   private timePaddedPrefixUsage = (
     time: Pick<UserInput, "year" | "month" | "day">
   ): string => {
-    const removePadding = (value: Time | undefined) =>
-      value && Number(value).toString();
+    let prefix = `${this.filepathPrefixes.usage}/${time.year}`;
+    if (time.month) prefix += `/${addPadding(time.month)}`;
+    if (time.day) prefix += `/${removePadding(time.day)}`;
 
-    return `${time.year}/${removePadding(time.month)}/${removePadding(
-      time.day
-    )}`;
+    return prefix;
   };
 }
 
