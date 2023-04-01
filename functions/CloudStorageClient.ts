@@ -67,15 +67,11 @@ class CloudStorageClient {
    * @param {UserInput} uesrInput - data of request
    */
   private getFilesData = async (userInput: UserInput) => {
-    // prepare proper format of month and day variables
-    const month = userInput.month && this.getProperTimePadding(userInput.month);
-    const day = userInput.day && this.getProperTimePadding(userInput.day);
-
-    if (userInput.year && month && day) {
+    if (userInput.year && userInput.month && userInput.day) {
       return await this.downloadDailyData(userInput);
     }
 
-    if (userInput.year && month) {
+    if (userInput.year && userInput.month) {
       return await this.getMonthlyData();
     }
 
@@ -98,15 +94,16 @@ class CloudStorageClient {
     day,
     meteringPointIds,
   }: UserInput) => {
-    const timePrefix = `${year}/${month}/${day}`;
-    const pricesFile = `${this.filepathPrefixes.prices}/${timePrefix}.jsonl`;
+    const timePrefixPrices = this.timePaddedPrefix({ year, month, day });
+    const timePrefixUsage = this.timePaddedPrefix({ year, month, day }, false);
+    const pricesFile = `${this.filepathPrefixes.prices}/${timePrefixPrices}.jsonl`;
 
     // add usage files for each metering point id given
     const usageFiles: { pointId: string | number; name: string }[] = [];
-    meteringPointIds?.forEach((pointId) =>
+    meteringPointIds?.split(",").forEach((pointId) =>
       usageFiles.push({
         pointId,
-        name: `${this.filepathPrefixes.usage}/${timePrefix}/${pointId}.jsonl`,
+        name: `${this.filepathPrefixes.usage}/${timePrefixUsage}/${pointId}.jsonl`,
       })
     );
 
@@ -136,24 +133,26 @@ class CloudStorageClient {
   };
 
   /**
-   * Generate filepaths w/ prefixes + times for prices and usage files
-   * @param {Time} time - the requested by the client time of data - year, month, day
+   * Generate filepaths w/ prefixes + times for prices or usage files
+   * @param {Time} time - the requested by the client time of data - year, month and day
    * @param {boolean} isForPrice - prices have a trailing zero, usages do not
-   * @returns an object w/ fullpaths of prices and usage
+   * @returns a timePaddedPrefix for either a prices or usage file
    */
-  private getProperTimePadding = (
-    time: Time,
+  private timePaddedPrefix = (
+    time: Pick<UserInput, "year" | "month" | "day">,
     isForPrice: boolean = true
-  ): Time => {
-    // if given time is one digit
-    // can be also written as time.toString().length === 1
-    if (+time <= 9) {
-      return isForPrice
-        ? time?.toString().padStart(2, "0") // times for price files have a trailing zero
-        : Number(time).toString(); // times for usage files do not have a trailing zero
-    }
+  ): string => {
+    const addPadding = (value: Time | undefined) => {
+      return value?.toString().padStart(2, "0");
+    };
 
-    return time;
+    const removePadding = (value: Time | undefined) => {
+      return value && Number(value).toString();
+    };
+
+    return isForPrice
+      ? `${time.year}/${addPadding(time.month)}/${addPadding(time.day)}`
+      : `${time.year}/${removePadding(time.month)}/${removePadding(time.day)}`;
   };
 }
 
