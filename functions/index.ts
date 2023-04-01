@@ -1,8 +1,6 @@
 import CloudStorageClient from "./CloudStorageClient";
-import { BUCKET_NAME } from "./constants/constants";
 
 import userInputValidator from "./business/userInput.validator";
-import getServiceAccountBucket from "./getServiceAccountBucket";
 
 /**
  * Retrieve data from usage/ and prices/ objects from TOKI's
@@ -24,18 +22,11 @@ const helloData = async (req: any, res: any) => {
     throw new Error("User Input is invalid");
   }
 
-  // TODO move initilization to CloudStorageClient
-  // instantiate a new client based on the CI_PROD env variable
-  const storageBucket = await getServiceAccountBucket(
-    BUCKET_NAME,
-    Boolean(process.env.CI_PROD)
-  );
-
-  // prepare a CloudStorageClient entity to work w/ requested data
-  const cloudStorage = new CloudStorageClient(storageBucket);
+  // build a CloudStorageClient to work w/ requested data
+  const cloudStorageClient = await CloudStorageClient.buildClient();
 
   // get user requested data
-  const responseData = await cloudStorage.getUserData(req.query);
+  const responseData = await cloudStorageClient.getUserData(req.query);
 
   // send response back to client
   res.send(`${responseData}`);

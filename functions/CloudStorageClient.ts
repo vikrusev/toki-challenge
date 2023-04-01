@@ -1,10 +1,16 @@
 import { Bucket } from "@google-cloud/storage";
 
+import { BUCKET_NAME } from "./constants/constants";
 import { UserInput, Time } from "./models/UserInput.model";
 
+import getServiceAccountBucket from "./getServiceAccountBucket";
+
 class CloudStorageClient {
+  // a Bucket connected to TOKI's Google Cloud Storage
   private bucket: Bucket;
-  private filepathPrefixes = {
+
+  // inital prefixes of files in the Cloud Storage
+  private readonly filepathPrefixes = {
     prices: "prices",
     usage: "usage",
   };
@@ -12,13 +18,35 @@ class CloudStorageClient {
   /**
    * Init CloudStorageClient object by making a deep copy of the passed bucket,
    * because otherwise it will be just a reference to the outside bucket
+   *
+   * We use a static build function to instantiate an object of this class
+   * because we want this.bucket to be created from within the object
+   *
+   * This way we are preserving the encapsulation of private members
+   *
+   * We cannot have an async constructor for this and we do not want to have
+   * an additional init() method to create the bucket reference
    * @param {Bucket} bucket - bucket object to Google Cloud
    */
-  constructor(bucket: Bucket) {
+  private constructor(bucket: Bucket) {
     this.bucket = Object.assign({}, bucket, {
       metadata: { ...bucket.metadata },
       storage: { ...bucket.storage },
     });
+  }
+
+  /**
+   * The idea is not to break encapsulation by having and exposed reference
+   * to the private member this.bucket
+   * @returns a Promise of a CloudStorageClient initialisation
+   */
+  static async buildClient() {
+    const storageBucket = await getServiceAccountBucket(
+      BUCKET_NAME,
+      Boolean(process.env.CI_PROD)
+    );
+
+    return new CloudStorageClient(storageBucket);
   }
 
   /**
