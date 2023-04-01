@@ -1,6 +1,6 @@
 import CloudStorageClient from "./business/CloudStorageClient";
-import isUserInputValid from "./business/validators/userInput.validator";
 import getStorageOptions from "./config/getStorageOptions";
+import validationSchema from "./business/validators/userInput.validator";
 
 /**
  * Retrieve data from usage/ and prices/ objects from TOKI's
@@ -19,8 +19,9 @@ import getStorageOptions from "./config/getStorageOptions";
  */
 const helloData = async (req: any, res: any) => {
   // check if user input is valid
-  if (!isUserInputValid(req.query)) {
-    throw new Error("User Input is invalid");
+  const isUserInputValid = validationSchema.validate(req.query);
+  if (isUserInputValid.error) {
+    throw new Error(`User Input is invalid. Error: ${isUserInputValid.error}`);
   }
 
   // read options for Cloud Storage

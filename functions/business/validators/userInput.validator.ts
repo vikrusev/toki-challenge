@@ -1,30 +1,20 @@
+import Joi from "joi";
 import { UserInput } from "../../dtos/UserInput.dto";
 
-/**
- * Checks if the user input is valid or not
- * TODO add additional checks for year, month and day
- * TODO e.g. they should be positive integers
- * TODO add JOI
- * @param {UserInput} param0 consists of requested time and eventually metering point ids
- * @returns {boolean} if the input is valid or not
- */
-const isUserInputValid = ({
-  year,
-  month,
-  day,
-  meteringPointIds,
-}: UserInput): boolean => {
-  const pointIds = meteringPointIds?.split(",");
+const schema = Joi.object<UserInput>({
+  year: Joi.number().integer().min(1900).max(9999).required(),
+  // month is optional unless day is given
+  // if day is given, then month is required
+  month: Joi.number().integer().min(1).max(12).when("day", {
+    is: Joi.exist(),
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+  day: Joi.number().integer().min(1).max(31),
+  // regex to catch a string representation of array elements joined w/ `,`
+  // example: '1,2,3,4' is valid, '1, 2,3' is invalid because of the space
+  // '[1,2,3]' is invalid because of the brackets
+  meteringPointIds: Joi.string().regex(/^\d+(?:,\d+)*$/),
+});
 
-  return !Boolean(
-    !year || // year must be provided
-      isNaN(Number(year)) || // year should be a number
-      Boolean(year && day && !month) || // year and day must have month
-      Boolean(month && isNaN(Number(month))) || // month should be a number
-      Boolean(day && isNaN(Number(day))) || // day should be a number
-      // all meteringPointIds should be number
-      pointIds?.some((id) => isNaN(Number(id)))
-  );
-};
-
-export default isUserInputValid;
+export default schema;
