@@ -1,6 +1,7 @@
 import CloudStorageClient from "./business/CloudStorageClient";
 import getStorageOptions from "./config/getStorageOptions";
 import validationSchema from "./business/validators/userInput.validator";
+import parsePriceUsageData from "./business/parseData";
 
 /**
  * Retrieve data from usage/ and prices/ objects from TOKI's
@@ -31,10 +32,13 @@ const mainEntrypoint = async (req: any, res: any) => {
   const cloudStorageClient = new CloudStorageClient(storageOptions);
 
   // get user requested data
-  const responseData = await cloudStorageClient.getUserData(req.query);
+  const requestedData = await cloudStorageClient.getUserData(req.query);
+
+  // parse and aggregate requested data
+  const aggregatedData = parsePriceUsageData(requestedData, req.query);
 
   // send response back to client
-  res.send(`${responseData}`);
+  res.send(aggregatedData);
 };
 
 export { mainEntrypoint };

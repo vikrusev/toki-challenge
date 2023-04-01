@@ -1,18 +1,12 @@
 import { Storage, Bucket, StorageOptions } from "@google-cloud/storage";
 
-import { BUCKET_NAME } from "../config/constants";
+import { BUCKET_NAME, FILEPATH_PREFIXES } from "../config/constants";
 import { InputTime, UserInput } from "../dtos/UserInput.dto";
 import { addPadding, removePadding } from "./helpers/datePrefix.helper";
 
 class CloudStorageClient {
   // a Bucket connected to TOKI's Google Cloud Storage
   private bucket: Bucket;
-
-  // inital prefixes of files in the Cloud Storage
-  private readonly filepathPrefixes = {
-    prices: "prices",
-    usage: "usage",
-  };
 
   constructor(storageOptions: StorageOptions) {
     this.bucket = this.getStorageBucket(BUCKET_NAME, storageOptions);
@@ -69,7 +63,7 @@ class CloudStorageClient {
    * @param {Time} time - the requested by the client time of data - year, month and day
    */
   private timePaddedPrefixPrices = (time: InputTime): string => {
-    let prefix = `${this.filepathPrefixes.prices}/${time.year}`;
+    let prefix = `${FILEPATH_PREFIXES.prices}/${time.year}`;
     if (time.month) prefix += `/${addPadding(time.month)}`;
     if (time.day) prefix += `/${addPadding(time.day)}`;
 
@@ -81,7 +75,7 @@ class CloudStorageClient {
    * @param {Time} time - the requested by the client time of data - year, month and day
    */
   private timePaddedPrefixUsage = (time: InputTime): string => {
-    let prefix = `${this.filepathPrefixes.usage}/${time.year}`;
+    let prefix = `${FILEPATH_PREFIXES.usage}/${time.year}`;
     if (time.month) prefix += `/${addPadding(time.month)}`;
     if (time.day) prefix += `/${removePadding(time.day)}`;
 
