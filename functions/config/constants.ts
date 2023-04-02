@@ -12,6 +12,10 @@ export const SECRET_KEYFILENAME_PATH_PROD = "/secrets";
 // e.g. usage/2022/04/01/1234.jsonl will match 1234
 export const POINTID_REGEX = /(\d+)\.jsonl$/;
 
+// get 'YYYY/MM/DD' time from a filename
+//e.g. we can get `2022/04/1` from usage/2022/04/1/1234.jsonl or prices/2022/04/01.jsonl
+export const YEAR_MONTH_DAY_REGEX = /(\d{4})\/(\d{2})\/((\d{2})|(\d{1}))/;
+
 // inital prefixes of files in the Cloud Storage
 export const FILEPATH_PREFIXES = {
   prices: "prices",

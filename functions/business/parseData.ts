@@ -1,8 +1,16 @@
 import { DownloadResponse } from "@google-cloud/storage";
-import { FILEPATH_PREFIXES, POINTID_REGEX } from "../config/constants";
-import { GroupedUsageData, ParsedData } from "../../common/data.types";
+import {
+  FILEPATH_PREFIXES,
+  POINTID_REGEX,
+  YEAR_MONTH_DAY_REGEX,
+} from "../config/constants";
+import {
+  GroupedUsageData,
+  ParsedData,
+  SimplifiedPricesData,
+  SimplifiedUsageData,
+} from "../../common/data.types";
 import { InputTime } from "../dtos/UserInput.dto";
-import { removePadding } from "./helpers/datePrefix.helper";
 
 type FileData = {
   filename: string;
@@ -47,6 +55,18 @@ const groupUsageDataByPointId = (
   }, {} as GroupedUsageData);
 };
 
+/**
+ * Simplifies prices and usage data to have the structure
+ * { 'YYYY/MM/DD': { timestamp, price, currency }[] }
+ */
+const simplifyDailyData = (pricesData: ParsedData[]) => {
+  return pricesData.reduce((acc, { filename, parsedData }) => {
+    const [fullTime] = filename.match(YEAR_MONTH_DAY_REGEX)!;
+    acc[fullTime] = parsedData;
+    return acc;
+  }, {} as SimplifiedPricesData);
+};
+
 const aggregate = (files: any) => {
   const result = {} as any;
   files.forEach((file: any) => {
@@ -72,26 +92,37 @@ const parsePriceUsageData = (
   files: FileData[],
   { month, day }: Pick<InputTime, "month" | "day">
 ) => {
-  // filter prices files
+  // Stage #1 - filter prices and usage data
   const pricesDataFiles = files.filter(({ filename }) =>
     filename.startsWith(FILEPATH_PREFIXES.prices)
   );
-
-  // filter usage files
   const usageDataFiles = files.filter(({ filename }) =>
     filename.startsWith(FILEPATH_PREFIXES.usage)
   );
 
+  // Stage #2 - parse content of the .jsonl files
   const dailyPricesData = parseData(pricesDataFiles);
   const dailyUsageData = parseData(usageDataFiles);
-  // group usage files by pointId
+
+  // Stage #3 - group usage datas by pointId
   const groupedDailyUsageData = groupUsageDataByPointId(dailyUsageData);
 
-  // Daily data
+  // Stage #4 - simplify daily data to have nice and reusable structure
+  const simplifiedDailyPricesData = simplifyDailyData(dailyPricesData);
+  const simplifiedGroupedDailyUsageData = Object.assign(
+    {},
+    ...Object.entries(groupedDailyUsageData).map(([pointId, data]) => {
+      return {
+        [pointId]: simplifyDailyData(data),
+      };
+    })
+  ) as SimplifiedUsageData;
+
+  // Stage #5 - return Daily data
   if (day) {
     return {
-      dailyPricesData,
-      dailyUsageData,
+      simplifiedDailyPricesData,
+      simplifiedGroupedDailyUsageData,
     };
   }
 
