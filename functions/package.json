@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile:prod": "tsc --sourceMap false",
     "compile:debug": "tsc",
-    "debug": "node --inspect node_modules/@google-cloud/functions-framework/build/src/main.js --source=./dist --target=mainEntrypoint",
-    "watch": "concurrently \"npm run compile:debug -- --watch\" \"nodemon --watch ./dist/ --exec npm run debug\""
+    "debug": "node --inspect node_modules/@google-cloud/functions-framework/build/src/main.js --source=./dist/functions --target=mainEntrypoint",
+    "watch": "concurrently \"npm run compile:debug -- --watch\" \"nodemon --watch ./dist/functions --exec npm run debug\""
   },
   "author": "",
   "license": "ISC",
