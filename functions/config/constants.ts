@@ -12,16 +12,3 @@ export const FILEPATH_PREFIXES = {
   prices: "prices",
   usage: "usage",
 };
-
-// information given in a prices file
-export interface PricesData {
-  timestamp: number;
-  price: number;
-  currency: "BGN" | "EUR";
-}
-
-// information given in a usage file
-export interface UsageData {
-  timestamp: number;
-  kwh: number;
-}

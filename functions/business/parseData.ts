@@ -1,6 +1,8 @@
 import { DownloadResponse } from "@google-cloud/storage";
-import { FILEPATH_PREFIXES, PricesData, UsageData } from "../config/constants";
+import { FILEPATH_PREFIXES } from "../config/constants";
+import { GroupedUsageData, ParsedData } from "../../common/data.types";
 import { InputTime } from "../dtos/UserInput.dto";
+import { removePadding } from "./helpers/datePrefix.helper";
 
 type FileData = {
   filename: string;
@@ -11,13 +13,13 @@ type FileData = {
  * Parse JsonL data and map to TypeScript objects
  * @returns an array w/ parsed data and mapped to objects
  */
-const parseData = (files: FileData[]) => {
+const parseData = (files: FileData[]): ParsedData[] => {
   // loop each given file
   const parsedPricesDataFiles = files.map((file) => {
     // parse lines and filter empty lines if any
     const lines = file.data.toString().split("\n");
     const parsedData = lines
-      .map((line): PricesData & UsageData => line && JSON.parse(line))
+      .map((line): ParsedData["parsedData"][0] => line && JSON.parse(line))
       .filter((el) => el);
 
     return {
@@ -30,32 +32,82 @@ const parseData = (files: FileData[]) => {
 };
 
 /**
+ * Group parsed usageDataFiles by pointId
+ */
+const groupUsageDataByPointId = (
+  usageDataFiles: ParsedData[]
+): GroupedUsageData => {
+  return usageDataFiles.reduce((result: GroupedUsageData, file: ParsedData) => {
+    const pointId = file.filename.match(/(\d+)\.jsonl$/)![1];
+
+    if (!result[pointId]) result[pointId] = [];
+    result[pointId].push(file);
+
+    return result;
+  }, {} as GroupedUsageData);
+};
+
+const aggregate = (files: any) => {
+  const result = {} as any;
+  files.forEach((file: any) => {
+    const day = file.filename.match(/(\d+)\.jsonl$/)![1];
+    const values = file.parsedData.map((data: any) => data.price);
+    const sum = values.reduce((acc: number, val: number) => acc + val, 0);
+    // assume we have only one currency
+    result[removePadding(day)!] = (sum / values.length).toFixed(2);
+  });
+
+  return result;
+};
+
+/**
  * Parses files data and aggregates the information
  * It can be aggregated on a Daily, Monthly and Yearly basis
  *
  * @param files - prices and eventually usage data files
- * @param param1 - times provided by the user input
+ * @param param1 - times provided by the user input, year is not needed
  * @returns an aggregated final version of data based on @param param1
  */
-const aggregatePriceUsageData = (
+const parsePriceUsageData = (
   files: FileData[],
-  { year, month, day }: InputTime
+  { month, day }: Pick<InputTime, "month" | "day">
 ) => {
+  // filter prices files
   const pricesDataFiles = files.filter(({ filename }) =>
     filename.startsWith(FILEPATH_PREFIXES.prices)
   );
 
+  // filter usage files
   const usageDataFiles = files.filter(({ filename }) =>
     filename.startsWith(FILEPATH_PREFIXES.usage)
   );
 
-  const parsedPricesData = parseData(pricesDataFiles);
-  const parsedUsageData = parseData(usageDataFiles);
+  const dailyPricesData = parseData(pricesDataFiles);
+  const dailyUsageData = parseData(usageDataFiles);
+  // group usage files by pointId
+  const groupedDailyUsageData = groupUsageDataByPointId(dailyUsageData);
 
-  return {
-    parsedPricesData,
-    parsedUsageData,
-  };
+  // Daily data
+  if (day) {
+    return {
+      dailyPricesData,
+      dailyUsageData,
+    };
+  }
+
+  // Monthly data
+  const monthlyPricesData = aggregate(dailyPricesData);
+  const monthlyUsageData = aggregate(groupedDailyUsageData);
+
+  if (month && !day) {
+    return {
+      monthlyPricesData,
+      monthlyUsageData,
+    };
+  }
+
+  // Yearly data
+  // return aggregateMonths(aggregatedDaysData);
 };
 
-export default aggregatePriceUsageData;
+export default parsePriceUsageData;
