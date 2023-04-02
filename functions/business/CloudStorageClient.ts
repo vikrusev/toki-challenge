@@ -1,6 +1,10 @@
 import { Storage, Bucket, StorageOptions } from "@google-cloud/storage";
 
-import { BUCKET_NAME, FILEPATH_PREFIXES } from "../config/constants";
+import {
+  BUCKET_NAME,
+  FILEPATH_PREFIXES,
+  POINTID_REGEX,
+} from "../config/constants";
 import { InputTime, UserInput } from "../dtos/UserInput.dto";
 import { addPadding, removePadding } from "./helpers/datePrefix.helper";
 
@@ -42,7 +46,7 @@ class CloudStorageClient {
 
       // check if the file is for usage and is for some of the requested metering points
       if (meteringPointIds && file.name.startsWith(`${timePrefixUsage}/`)) {
-        const pointId = file.name.match(/(\d+)\.jsonl$/)![1];
+        const pointId = file.name.match(POINTID_REGEX)![1];
         return meteringPointIds.split(",").includes(pointId);
       }
 

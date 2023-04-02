@@ -7,6 +7,11 @@ export const SECRET_NAME = "toki-service-account";
 // mounted volume path of secrets within Google Cloud Functions
 export const SECRET_KEYFILENAME_PATH_PROD = "/secrets";
 
+// get a pointId out of a usage file
+// the regex matches as a group digits, which are followed by .jsonl
+// e.g. usage/2022/04/01/1234.jsonl will match 1234
+export const POINTID_REGEX = /(\d+)\.jsonl$/;
+
 // inital prefixes of files in the Cloud Storage
 export const FILEPATH_PREFIXES = {
   prices: "prices",

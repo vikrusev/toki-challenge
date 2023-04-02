@@ -1,5 +1,5 @@
 import { DownloadResponse } from "@google-cloud/storage";
-import { FILEPATH_PREFIXES } from "../config/constants";
+import { FILEPATH_PREFIXES, POINTID_REGEX } from "../config/constants";
 import { GroupedUsageData, ParsedData } from "../../common/data.types";
 import { InputTime } from "../dtos/UserInput.dto";
 import { removePadding } from "./helpers/datePrefix.helper";
@@ -38,7 +38,7 @@ const groupUsageDataByPointId = (
   usageDataFiles: ParsedData[]
 ): GroupedUsageData => {
   return usageDataFiles.reduce((result: GroupedUsageData, file: ParsedData) => {
-    const pointId = file.filename.match(/(\d+)\.jsonl$/)![1];
+    const pointId = file.filename.match(POINTID_REGEX)![1];
 
     if (!result[pointId]) result[pointId] = [];
     result[pointId].push(file);
@@ -50,7 +50,7 @@ const groupUsageDataByPointId = (
 const aggregate = (files: any) => {
   const result = {} as any;
   files.forEach((file: any) => {
-    const day = file.filename.match(/(\d+)\.jsonl$/)![1];
+    const day = file.filename.match(POINTID_REGEX)![1];
     const values = file.parsedData.map((data: any) => data.price);
     const sum = values.reduce((acc: number, val: number) => acc + val, 0);
     // assume we have only one currency
