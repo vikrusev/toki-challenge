@@ -66,20 +66,20 @@ const groupUsageDataByPointId = (
   );
 };
 
-const aggregateAveragePricesRecords = (
-  pricesData: Pick<PricesData, "price" | "datetime">[],
+const aggregateAverageRecords = (
+  data: (
+    | Pick<PricesData, "price" | "datetime">
+    | Pick<UsageData, "kwh" | "datetime">
+  )[],
   month?: Time
 ) => {
-  const aggregatedPricesRecords = pricesData.reduce(
-    (acc, { price, datetime }) => {
-      const date = new Date(datetime!);
-      const key = month ? `${date.getDate()}` : `${date.getMonth() + 1}`;
-      if (!(key in acc)) acc[key] = [];
-      acc[key].push(price);
-      return acc;
-    },
-    {} as AggregatedData
-  );
+  const aggregatedPricesRecords = data.reduce((acc, data) => {
+    const date = new Date(data.datetime!);
+    const key = month ? `${date.getDate()}` : `${date.getMonth() + 1}`;
+    if (!(key in acc)) acc[key] = [];
+    acc[key].push("price" in data ? data.price : data.kwh);
+    return acc;
+  }, {} as AggregatedData);
 
   return Object.entries(aggregatedPricesRecords).map(([date, values]) => {
     const sum = values.reduce((acc, val) => acc + val, 0);
@@ -106,15 +106,13 @@ const cleanData = (
     }));
 
   const cleanedUsageData = Object.entries(groupedUsageData).map(
-    ([pointId, data]) => {
-      return {
-        pointId,
-        data: data.map(({ timestamp, kwh }) => ({
-          datetime: new Date(timestamp),
-          kwh,
-        })),
-      };
-    }
+    ([pointId, data]) => ({
+      pointId,
+      data: data.map(({ timestamp, kwh }) => ({
+        datetime: new Date(timestamp),
+        kwh,
+      })),
+    })
   );
 
   return {
@@ -186,16 +184,16 @@ const parsePriceUsageData = (
   }
 
   // otherwise aggregate obtained data and calculate average values
-  const averagedPricesRecords = aggregateAveragePricesRecords(
-    pricesData,
-    month
-  );
+  const averagedPricesRecords = aggregateAverageRecords(pricesData, month);
 
-  // const averagedUsageData = ;
+  const averagedUsageData = usageData.map(({ pointId, data }) => ({
+    pointId,
+    data: aggregateAverageRecords(data, month),
+  }));
 
   return {
     pricesData: averagedPricesRecords,
-    usageData,
+    usageData: averagedUsageData,
   };
 };
 
