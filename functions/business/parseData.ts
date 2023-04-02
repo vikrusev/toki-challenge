@@ -1,20 +1,28 @@
 import { DownloadResponse } from "@google-cloud/storage";
+import { FILEPATH_PREFIXES, POINTID_REGEX } from "../config/constants";
 import {
-  FILEPATH_PREFIXES,
-  POINTID_REGEX,
-  YEAR_MONTH_DAY_REGEX,
-} from "../config/constants";
-import {
+  AggregatedData,
+  ClientResponse,
   GroupedUsageData,
   ParsedData,
-  SimplifiedPricesData,
-  SimplifiedUsageData,
+  PricesData,
+  UsageData,
 } from "../../common/data.types";
-import { InputTime } from "../dtos/UserInput.dto";
+import { InputTime, Time } from "../dtos/UserInput.dto";
 
 type FileData = {
   filename: string;
   data: DownloadResponse;
+};
+
+// type guard for PricesData
+const isPricesData = (el: ParsedData["parsedData"]): el is PricesData[] => {
+  return el.every((e) => "price" in e);
+};
+
+// type guard for UsageData
+const isUsageData = (el: ParsedData["parsedData"]): el is UsageData[] => {
+  return el.every((e) => "kwh" in e);
 };
 
 /**
@@ -45,39 +53,113 @@ const parseData = (files: FileData[]): ParsedData[] => {
 const groupUsageDataByPointId = (
   usageDataFiles: ParsedData[]
 ): GroupedUsageData => {
-  return usageDataFiles.reduce((result: GroupedUsageData, file: ParsedData) => {
-    const pointId = file.filename.match(POINTID_REGEX)![1];
+  return usageDataFiles.reduce(
+    (result: GroupedUsageData, { filename, parsedData }) => {
+      const pointId = filename.match(POINTID_REGEX)![1];
 
-    if (!result[pointId]) result[pointId] = [];
-    result[pointId].push(file);
+      if (!result[pointId]) result[pointId] = [];
+      result[pointId].push(...(parsedData as UsageData[]));
 
-    return result;
-  }, {} as GroupedUsageData);
+      return result;
+    },
+    {} as GroupedUsageData
+  );
+};
+
+const aggregateAveragePricesRecords = (
+  pricesData: Pick<PricesData, "price" | "datetime">[],
+  month?: Time
+) => {
+  const aggregatedPricesRecords = pricesData.reduce(
+    (acc, { price, datetime }) => {
+      const date = new Date(datetime!);
+      const key = month ? `${date.getDate()}` : `${date.getMonth() + 1}`;
+      if (!(key in acc)) acc[key] = [];
+      acc[key].push(price);
+      return acc;
+    },
+    {} as AggregatedData
+  );
+
+  return Object.entries(aggregatedPricesRecords).map(([date, values]) => {
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return {
+      datetime: date,
+      price: Number((sum / values.length).toFixed(2)),
+    };
+  });
 };
 
 /**
- * Simplifies prices and usage data to have the structure
- * { 'YYYY/MM/DD': { timestamp, price, currency }[] }
+ * Keep only properties that are needed by the business layer
+ * @returns ready for ClientResponse data objects
  */
-const simplifyDailyData = (pricesData: ParsedData[]) => {
-  return pricesData.reduce((acc, { filename, parsedData }) => {
-    const [fullTime] = filename.match(YEAR_MONTH_DAY_REGEX)!;
-    acc[fullTime] = parsedData;
-    return acc;
-  }, {} as SimplifiedPricesData);
+const cleanData = (
+  pricesData: ParsedData[],
+  groupedUsageData: GroupedUsageData
+): ClientResponse => {
+  const cleanedPricesData = pricesData
+    .flatMap(({ parsedData }) => parsedData)
+    .map(({ timestamp, price }) => ({
+      datetime: new Date(timestamp!),
+      price: price,
+    }));
+
+  const cleanedUsageData = Object.entries(groupedUsageData).map(
+    ([pointId, data]) => {
+      return {
+        pointId,
+        data: data.map(({ timestamp, kwh }) => ({
+          datetime: new Date(timestamp),
+          kwh,
+        })),
+      };
+    }
+  );
+
+  return {
+    pricesData: cleanedPricesData,
+    usageData: cleanedUsageData,
+  };
 };
 
-const aggregate = (files: any) => {
-  const result = {} as any;
-  files.forEach((file: any) => {
-    const day = file.filename.match(POINTID_REGEX)![1];
-    const values = file.parsedData.map((data: any) => data.price);
-    const sum = values.reduce((acc: number, val: number) => acc + val, 0);
-    // assume we have only one currency
-    result[removePadding(day)!] = (sum / values.length).toFixed(2);
-  });
+/**
+ * Executes 4 stages of data parsing
+ * Stage #1 - seperate prices from usage data files
+ * Stage #2 - read file contents and parse them to JS objects
+ * Stage #3 - groups usage data by metering pointIds
+ * Stage #4 - cleans data to be consistent and use only what is needed
+ * @returns ready for ClientResponse data
+ */
+const parseAndDistributeData = (files: FileData[]): ClientResponse => {
+  // Stage #1 - filter prices and usage data
+  const pricesDataFiles = files.filter(({ filename }) =>
+    filename.startsWith(FILEPATH_PREFIXES.prices)
+  );
+  const usageDataFiles = files.filter(({ filename }) =>
+    filename.startsWith(FILEPATH_PREFIXES.usage)
+  );
 
-  return result;
+  // Stage #2 - parse content of the .jsonl files also assure types with type guards
+  const pricesData = parseData(pricesDataFiles).map(
+    ({ filename, parsedData }) => ({
+      filename,
+      parsedData: isPricesData(parsedData) ? parsedData : [],
+    })
+  );
+
+  const usageData = parseData(usageDataFiles).map(
+    ({ filename, parsedData }) => ({
+      filename,
+      parsedData: isUsageData(parsedData) ? parsedData : [],
+    })
+  );
+
+  // Stage #3 - group usage datas by pointId
+  const groupedUsageData = groupUsageDataByPointId(usageData);
+
+  // Stage #4 - return cleaned data / use only what is needed
+  return cleanData(pricesData, groupedUsageData);
 };
 
 /**
@@ -91,54 +173,30 @@ const aggregate = (files: any) => {
 const parsePriceUsageData = (
   files: FileData[],
   { month, day }: Pick<InputTime, "month" | "day">
-) => {
-  // Stage #1 - filter prices and usage data
-  const pricesDataFiles = files.filter(({ filename }) =>
-    filename.startsWith(FILEPATH_PREFIXES.prices)
-  );
-  const usageDataFiles = files.filter(({ filename }) =>
-    filename.startsWith(FILEPATH_PREFIXES.usage)
-  );
+): ClientResponse => {
+  // parse raw prices and usage data
+  const { pricesData, usageData } = parseAndDistributeData(files);
 
-  // Stage #2 - parse content of the .jsonl files
-  const dailyPricesData = parseData(pricesDataFiles);
-  const dailyUsageData = parseData(usageDataFiles);
-
-  // Stage #3 - group usage datas by pointId
-  const groupedDailyUsageData = groupUsageDataByPointId(dailyUsageData);
-
-  // Stage #4 - simplify daily data to have nice and reusable structure
-  const simplifiedDailyPricesData = simplifyDailyData(dailyPricesData);
-  const simplifiedGroupedDailyUsageData = Object.assign(
-    {},
-    ...Object.entries(groupedDailyUsageData).map(([pointId, data]) => {
-      return {
-        [pointId]: simplifyDailyData(data),
-      };
-    })
-  ) as SimplifiedUsageData;
-
-  // Stage #5 - return Daily data
+  // if day is specified, return the result so far
   if (day) {
     return {
-      simplifiedDailyPricesData,
-      simplifiedGroupedDailyUsageData,
+      pricesData,
+      usageData,
     };
   }
 
-  // Monthly data
-  const monthlyPricesData = aggregate(dailyPricesData);
-  const monthlyUsageData = aggregate(groupedDailyUsageData);
+  // otherwise aggregate obtained data and calculate average values
+  const averagedPricesRecords = aggregateAveragePricesRecords(
+    pricesData,
+    month
+  );
 
-  if (month && !day) {
-    return {
-      monthlyPricesData,
-      monthlyUsageData,
-    };
-  }
+  // const averagedUsageData = ;
 
-  // Yearly data
-  // return aggregateMonths(aggregatedDaysData);
+  return {
+    pricesData: averagedPricesRecords,
+    usageData,
+  };
 };
 
 export default parsePriceUsageData;
