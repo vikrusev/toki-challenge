@@ -30,23 +30,13 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
   const [day, setDay] = useState<string>('01')
 
   useEffect(() => {
-    setData({ 
-      pricesData: [
-        { datetime: 'Jan', price: 100 },
-        { datetime: 'Feb', price: 200 },
-        { datetime: 'Mar', price: 150 },
-        { datetime: 'Apr', price: 350 },
-        { datetime: 'May', price: 250 },
-        { datetime: 'Jun', price: 450 },
-        { datetime: 'Jul', price: 400 },
-        { datetime: 'Aug', price: 300 },
-        { datetime: 'Sep', price: 500 },
-        { datetime: 'Oct', price: 550 },
-        { datetime: 'Nov', price: 700 },
-        { datetime: 'Dec', price: 800 },
-      ],
-      usageData: []
-    })
+    async function fetchData() {
+      const url = `https://price-usage-aggregation-tkqhweb3ja-ew.a.run.app/?year=${year}&month=${month}&day=${day}&meteringPointIds=1234`
+      const response = await fetch(url);
+      const jsonData = await response.json();
+      setData(jsonData);
+    }
+    fetchData();
   }, [year, month, day])
 
   return (
@@ -59,7 +49,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
 
       {
         data?.pricesData && 
-        <LineChart width={600} height={300} data={data.pricesData}>
+        <LineChart width={1000} height={300} data={data.pricesData}>
           <XAxis dataKey="datetime" />
           <YAxis />
           <CartesianGrid strokeDasharray="3 3" />
@@ -67,7 +57,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
           <Legend />
           <Line
             type="monotone"
-            dataKey="price"
+            dataKey="value"
             stroke="#8884d8"
             activeDot={{ r: 8 }}
           />
