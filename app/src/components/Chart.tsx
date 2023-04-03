@@ -124,7 +124,9 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
               <Tooltip />
               {/* <Bar barSize={20} dataKey="1234" fill="#ff7300" />
               <Bar barSize={20} dataKey="5678" fill="#66fc03" /> */}
-              {meteringPointIds.map(pointId => <Line type="monotone" dataKey={pointId} stroke="#ff7300" />)}
+              {/* {meteringPointIds.map(pointId => <Line type="monotone" dataKey={pointId} stroke="#ff7300" />)} */}
+              <Line type="monotone" dataKey="1234" stroke="#ff7300" />
+              <Line type="monotone" dataKey="5678" stroke="#66fc03" />
             </ComposedChart>
           </ResponsiveContainer>
           : null
