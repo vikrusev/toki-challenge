@@ -7,8 +7,9 @@ import {
   ParsedData,
   PricesData,
   UsageData,
+  Response,
 } from "../../common/data.types";
-import { InputTime, Time } from "../dtos/UserInput.dto";
+import { Time, UserInput } from "../dtos/UserInput.dto";
 
 type FileData = {
   filename: string;
@@ -66,18 +67,12 @@ const groupUsageDataByPointId = (
   );
 };
 
-const aggregateAverageRecords = (
-  data: (
-    | Pick<PricesData, "price" | "datetime">
-    | Pick<UsageData, "kwh" | "datetime">
-  )[],
-  month?: Time
-) => {
+const aggregateAverageRecords = (data: Response[], month?: Time) => {
   const aggregatedPricesRecords = data.reduce((acc, data) => {
     const date = new Date(data.datetime!);
     const key = month ? `${date.getDate()}` : `${date.getMonth() + 1}`;
     if (!(key in acc)) acc[key] = [];
-    acc[key].push("price" in data ? data.price : data.kwh);
+    acc[key].push(data.value);
     return acc;
   }, {} as AggregatedData);
 
@@ -85,7 +80,7 @@ const aggregateAverageRecords = (
     const sum = values.reduce((acc, val) => acc + val, 0);
     return {
       datetime: date,
-      price: Number((sum / values.length).toFixed(2)),
+      value: Number((sum / values.length).toFixed(2)),
     };
   });
 };
@@ -95,14 +90,14 @@ const aggregateAverageRecords = (
  * @returns ready for ClientResponse data objects
  */
 const cleanData = (
-  pricesData: ParsedData[],
+  pricesData: { filename: string; parsedData: PricesData[] }[],
   groupedUsageData: GroupedUsageData
 ): ClientResponse => {
   const cleanedPricesData = pricesData
     .flatMap(({ parsedData }) => parsedData)
     .map(({ timestamp, price }) => ({
       datetime: new Date(timestamp!),
-      price: price,
+      value: price,
     }));
 
   const cleanedUsageData = Object.entries(groupedUsageData).map(
@@ -110,7 +105,7 @@ const cleanData = (
       pointId,
       data: data.map(({ timestamp, kwh }) => ({
         datetime: new Date(timestamp),
-        kwh,
+        value: kwh,
       })),
     })
   );
@@ -170,7 +165,7 @@ const parseAndDistributeData = (files: FileData[]): ClientResponse => {
  */
 const parsePriceUsageData = (
   files: FileData[],
-  { month, day }: Pick<InputTime, "month" | "day">
+  { month, day }: Pick<UserInput, "month" | "day">
 ): ClientResponse => {
   // parse raw prices and usage data
   const { pricesData, usageData } = parseAndDistributeData(files);

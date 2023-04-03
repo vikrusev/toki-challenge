@@ -26,17 +26,15 @@ export interface AggregatedData {
   [datetime: string]: number[];
 }
 
-export interface PricesResponse {
+export interface Response {
   datetime: Date | string;
-  price: number;
-}
-
-export interface UsageResponse {
-  pointId: string;
-  data: Pick<UsageData, "datetime" | "kwh">[];
+  value: number;
 }
 
 export interface ClientResponse {
-  pricesData: PricesResponse[];
-  usageData: UsageResponse[];
+  pricesData: Response[];
+  usageData: {
+    pointId: string;
+    data: Response[];
+  }[];
 }
