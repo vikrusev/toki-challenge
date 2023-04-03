@@ -14,7 +14,7 @@ export const buildUrl = ({
   day,
   meteringPointIds,
 }: UrlBuildData) => {
-  let url = `https://price-usage-aggregation-tkqhweb3ja-ew.a.run.app/?year=${year}`;
+  let url = `http://localhost:8080/?year=${year}`;
 
   if (Number(month)) url += `&month=${month}`;
   if (Number(day)) url += `&day=${day}`;
