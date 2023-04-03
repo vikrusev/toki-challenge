@@ -3,14 +3,14 @@ export interface PricesData {
   price: number;
   timestamp: number;
   currency: "BGN" | "EUR";
-  datetime?: Date | string;
+  datetime?: string;
 }
 
 // information given in a usage file
 export interface UsageData {
   timestamp: number;
   kwh: number;
-  datetime?: Date | string;
+  datetime?: string;
 }
 
 export interface ParsedData {
@@ -27,7 +27,7 @@ export interface AggregatedData {
 }
 
 export interface Response {
-  datetime: Date | string;
+  datetime: string;
   value: number;
 }
 

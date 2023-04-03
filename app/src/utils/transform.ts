@@ -5,6 +5,11 @@ export interface TransformedUsageData {
   datetime: string;
 }
 
+/**
+ * Transform usageData into a beneficial for a Composed Rechart Chart
+ * @param data - usageData from the API response
+ * @returns an array of reduced usageData
+ */
 export const transformData = (
   data: ClientResponse["usageData"]
 ): TransformedUsageData[] =>

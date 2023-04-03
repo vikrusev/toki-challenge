@@ -96,7 +96,7 @@ const cleanData = (
   const cleanedPricesData = pricesData
     .flatMap(({ parsedData }) => parsedData)
     .map(({ timestamp, price }) => ({
-      datetime: new Date(timestamp!),
+      datetime: new Date(timestamp!).toString(),
       value: price,
     }));
 
@@ -104,7 +104,7 @@ const cleanData = (
     ([pointId, data]) => ({
       pointId,
       data: data.map(({ timestamp, kwh }) => ({
-        datetime: new Date(timestamp),
+        datetime: new Date(timestamp).toString(),
         value: kwh,
       })),
     })
