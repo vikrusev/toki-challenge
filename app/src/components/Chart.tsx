@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { ClientResponse, Response } from '../../../common/data.types'
+import { buildUrl, createArray } from "../utils/helper";
 import { transformData, TransformedUsageData } from "../utils/transform";
 import Dropdown from "./Dropdown";
 
@@ -19,16 +20,16 @@ interface IProps {
   title: string;
 }
 
-export const createArray = (untilNumber: number) =>
-  Array.from({ length: untilNumber }, (_, i) => String(i + 1).padStart(2, "0"));
-
 const Chart: React.FC<IProps> = ({ title }: IProps) => {
   const years = ["2022", "2023"];
   const months = createArray(12);
   const days = createArray(31);
   
-  const [pricesData, setPricesData] = useState<Response[]>()
-  const [usageData, setUsageData] = useState<TransformedUsageData[]>()
+  const [pricesData, setPricesData] = useState<Response[]>([])
+  const [usageData, setUsageData] = useState<TransformedUsageData[]>([])
+  const [meteringPointIds, setMeteringPointData] = useState<string[]>([])
+
+  const [shouldExecute, setShouldExecute] = useState<boolean>(false)
 
   const [year, setYear] = useState<string>('2022')
   const [month, setMonth] = useState<string>('04')
@@ -36,14 +37,25 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
 
   useEffect(() => {
     async function fetchData() {
-      const url = `https://price-usage-aggregation-tkqhweb3ja-ew.a.run.app/?year=${year}&month=${month}&day=${day}&meteringPointIds=1234,5678`
+      const url = buildUrl({
+        year, month, day, meteringPointIds
+      })
+      console.log(url)
       const response = await fetch(url);
       const { pricesData, usageData }: ClientResponse = await response.json();
       setPricesData(pricesData)
       setUsageData(transformData(usageData));
     }
-    fetchData();
-  }, [year, month, day])
+
+    if (shouldExecute) {
+      fetchData();
+      setShouldExecute(false)
+    }
+  }, [year, month, day, meteringPointIds, shouldExecute])
+  
+  const submitRequest = () => {
+    setShouldExecute(true)
+  }
 
   return (
     <>
@@ -53,51 +65,63 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
       <Dropdown label="month" values={months} onChange={setMonth}/>
       <Dropdown label="day" values={days} onChange={setDay}/>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart
-          width={500}
-          height={200}
-          data={pricesData}
-          syncId="anyId"
-          margin={{
-            top: 10,
-            right: 30,
-            left: 0,
-            bottom: 0,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="datetime" />
-          <YAxis />
-          <Tooltip />
-          <Line type="monotone" dataKey="value" stroke="#8884d8" />
-        </LineChart>
-      </ResponsiveContainer>
+      <label htmlFor="meteringPoints">Metering Point Ids:</label>
+      <input id="meteringPoints" type="text" value={meteringPointIds} onChange={(e) => setMeteringPointData(e.target.value.split(','))} />
 
-      <ResponsiveContainer width="100%" height={400}>
-        <ComposedChart
-          width={500}
-          height={200}
-          data={usageData}
-          syncId="anyId"
-          margin={{
-            top: 10,
-            right: 30,
-            left: 0,
-            bottom: 0,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="datetime" />
-          <YAxis />
-          <Tooltip />
-          <Brush />
-          {/* <Bar barSize={20} dataKey="1234" fill="#ff7300" />
-          <Bar barSize={20} dataKey="5678" fill="#66fc03" /> */}
-          <Line type="monotone" dataKey="1234" stroke="#ff7300" />
-          <Line type="monotone" dataKey="5678" stroke="#66fc03" />
-        </ComposedChart>
-      </ResponsiveContainer>
+      <button type="button" onClick={submitRequest}>Submit Request</button>
+
+      {
+        pricesData?.length ?
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart
+              width={500}
+              height={200}
+              data={pricesData}
+              syncId="anyId"
+              margin={{
+                top: 10,
+                right: 30,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="datetime" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="value" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
+          : null
+      }
+
+      { 
+        meteringPointIds?.length ? 
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart
+              width={500}
+              height={200}
+              data={usageData}
+              syncId="anyId"
+              margin={{
+                top: 10,
+                right: 30,
+                left: 0,
+                bottom: 0,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="datetime" />
+              <YAxis />
+              <Tooltip />
+              <Brush />
+              {/* <Bar barSize={20} dataKey="1234" fill="#ff7300" />
+              <Bar barSize={20} dataKey="5678" fill="#66fc03" /> */}
+              {meteringPointIds.map(pointId => <Line type="monotone" dataKey={pointId} stroke="#ff7300" />)}
+            </ComposedChart>
+          </ResponsiveContainer>
+          : null
+      }
     </>
   );
 };
