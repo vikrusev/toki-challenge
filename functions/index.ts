@@ -37,6 +37,9 @@ const mainEntrypoint = async (req: any, res: any) => {
   // parse and aggregate requested data
   const aggregatedData = parsePriceUsageData(requestedData, req.query);
 
+  // simply allow CORS from all origins
+  res.set("Access-Control-Allow-Origin", "*");
+
   // send response back to client
   res.send(aggregatedData);
 };
