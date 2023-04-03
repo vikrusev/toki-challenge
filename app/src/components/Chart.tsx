@@ -32,8 +32,8 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
   const [shouldExecute, setShouldExecute] = useState<boolean>(false)
 
   const [year, setYear] = useState<string>('2022')
-  const [month, setMonth] = useState<string>('04')
-  const [day, setDay] = useState<string>('01')
+  const [month, setMonth] = useState<string>('')
+  const [day, setDay] = useState<string>('')
 
   useEffect(() => {
     async function fetchData() {
