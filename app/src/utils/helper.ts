@@ -17,10 +17,8 @@ export const buildUrl = ({
   let url = `https://price-usage-aggregation-tkqhweb3ja-ew.a.run.app/?year=${year}`;
 
   if (Number(month)) url += `&month=${month}`;
-  else return url;
-
   if (Number(day)) url += `&day=${day}`;
-  if (meteringPointIds?.length)
+  if (meteringPointIds?.length && meteringPointIds.filter((p) => p).length)
     url += `&meteringPointIds=${meteringPointIds.join(",")}`;
 
   return url;

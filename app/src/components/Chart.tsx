@@ -40,7 +40,6 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
       const url = buildUrl({
         year, month, day, meteringPointIds
       })
-      console.log(url)
       const response = await fetch(url);
       const { pricesData, usageData }: ClientResponse = await response.json();
       setPricesData(pricesData)
@@ -66,7 +65,14 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
       <Dropdown label="day" values={days} onChange={setDay}/>
 
       <label htmlFor="meteringPoints">Metering Point Ids:</label>
-      <input id="meteringPoints" type="text" value={meteringPointIds} onChange={(e) => setMeteringPointData(e.target.value.split(','))} />
+      <input
+        id="meteringPoints"
+        type="text"
+        value={meteringPointIds}
+        onChange={(e) =>
+          setMeteringPointData(e.target.value.replace(/\s+/g, '').split(','))
+        }
+      />
 
       <button type="button" onClick={submitRequest}>Submit Request</button>
 
@@ -88,6 +94,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="datetime" />
               <YAxis />
+              <Brush />
               <Tooltip />
               <Line type="monotone" dataKey="value" stroke="#8884d8" />
             </LineChart>
@@ -96,7 +103,8 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
       }
 
       { 
-        meteringPointIds?.length ? 
+        usageData.length && 
+        meteringPointIds.some(el => `${el}` in usageData[0]) ? 
           <ResponsiveContainer width="100%" height={400}>
             <ComposedChart
               width={500}
@@ -114,7 +122,6 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
               <XAxis dataKey="datetime" />
               <YAxis />
               <Tooltip />
-              <Brush />
               {/* <Bar barSize={20} dataKey="1234" fill="#ff7300" />
               <Bar barSize={20} dataKey="5678" fill="#66fc03" /> */}
               {meteringPointIds.map(pointId => <Line type="monotone" dataKey={pointId} stroke="#ff7300" />)}
