@@ -13,7 +13,7 @@ import {
 
 import { ClientResponse, Response } from "../../../common/data.types";
 import { transformData, TransformedUsageData } from "../utils/transform";
-import UserInput from "./UserInput";
+import UserInputForm from "./UserInputForm";
 
 interface IProps {
     title: string;
@@ -23,27 +23,27 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     const [pricesData, setPricesData] = useState<Response[]>([]);
     const [usageData, setUsageData] = useState<TransformedUsageData[]>([]);
 
-    const [fetchUrl, setFetchUrl] = useState<string>();
+    const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
 
     useEffect(() => {
-        async function fetchData(fetchUrl: string) {
-            const response = await fetch(fetchUrl);
+        async function fetchData(fetchDataUrl: string) {
+            const response = await fetch(fetchDataUrl);
             const { pricesData, usageData }: ClientResponse =
                 await response.json();
             setPricesData(pricesData);
             setUsageData(transformData(usageData));
         }
 
-        if (fetchUrl) {
-            fetchData(fetchUrl);
+        if (fetchDataUrl) {
+            fetchData(fetchDataUrl);
         }
-    }, [fetchUrl]);
+    }, [fetchDataUrl]);
 
     return (
         <>
             <h1>{title}</h1>
 
-            <UserInput onSubmit={setFetchUrl} />
+            <UserInputForm onSubmit={setFetchDataUrl} />
 
             {pricesData?.length ? (
                 <ResponsiveContainer width="100%" height={200}>
