@@ -1,19 +1,28 @@
 import React, { Dispatch, SetStateAction } from "react";
+import { InputTime } from "../../../common/dtos/UserInput.dto";
 
 interface IProps {
-    label: string;
+    type: string;
     values: string[];
-    onChange: Dispatch<SetStateAction<string>>;
+    onChange: Dispatch<SetStateAction<InputTime>>;
 }
 
-const Dropdown: React.FC<IProps> = ({ label, values, onChange }: IProps) => {
+const Dropdown: React.FC<IProps> = ({ type, values, onChange }: IProps) => {
     return (
         <>
-            <label htmlFor={`${label}-select`}>{label}:</label>
+            <label htmlFor={`${type}-select`}>{type}:</label>
             <select
-                id={`${label}-select`}
-                onChange={(event) => onChange(event.target.value)}
+                defaultValue={values[0]}
+                id={`${type}-select`}
+                onChange={(event) =>
+                    onChange((prevValue) => ({
+                        ...prevValue,
+                        [type]: event.target.value,
+                    }))
+                }
             >
+                {type !== "year" && <option value="default">00</option>}
+
                 {values.map((v) => (
                     <option key={v} value={v}>
                         {v}

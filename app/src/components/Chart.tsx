@@ -12,6 +12,7 @@ import {
 } from "recharts";
 
 import { ClientResponse, Response } from "../../../common/data.types";
+import { InputTime } from "../../../common/dtos/UserInput.dto";
 import { buildUrl, createArray } from "../utils/helper";
 import { transformData, TransformedUsageData } from "../utils/transform";
 import Dropdown from "./Dropdown";
@@ -21,9 +22,11 @@ interface IProps {
 }
 
 const Chart: React.FC<IProps> = ({ title }: IProps) => {
-    const years = ["2022", "2023"];
-    const months = createArray(12);
-    const days = createArray(31);
+    const availableDates = {
+        years: ["2022", "2023"],
+        months: createArray(12),
+        days: createArray(31),
+    };
 
     const [pricesData, setPricesData] = useState<Response[]>([]);
     const [usageData, setUsageData] = useState<TransformedUsageData[]>([]);
@@ -31,16 +34,16 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
 
     const [shouldExecute, setShouldExecute] = useState<boolean>(false);
 
-    const [year, setYear] = useState<string>("2022");
-    const [month, setMonth] = useState<string>("");
-    const [day, setDay] = useState<string>("");
+    const [dateOptions, setDateOptions] = useState<InputTime>({
+        year: "2022",
+        month: "1",
+        day: "1",
+    });
 
     useEffect(() => {
         async function fetchData() {
             const url = buildUrl({
-                year,
-                month,
-                day,
+                dateOptions,
                 meteringPointIds,
             });
             const response = await fetch(url);
@@ -54,7 +57,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
             fetchData();
             setShouldExecute(false);
         }
-    }, [year, month, day, meteringPointIds, shouldExecute]);
+    }, [dateOptions, meteringPointIds, shouldExecute]);
 
     const submitRequest = () => {
         setShouldExecute(true);
@@ -64,9 +67,21 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
         <>
             <h1>{title}</h1>
 
-            <Dropdown label="year" values={years} onChange={setYear} />
-            <Dropdown label="month" values={months} onChange={setMonth} />
-            <Dropdown label="day" values={days} onChange={setDay} />
+            <Dropdown
+                type="year"
+                values={availableDates.years}
+                onChange={setDateOptions}
+            />
+            <Dropdown
+                type="month"
+                values={availableDates.months}
+                onChange={setDateOptions}
+            />
+            <Dropdown
+                type="day"
+                values={availableDates.days}
+                onChange={setDateOptions}
+            />
 
             <label htmlFor="meteringPoints">Metering Point Ids:</label>
             <input
