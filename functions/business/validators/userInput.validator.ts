@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { UserInput } from "../../dtos/UserInput.dto";
+import { UserInput } from "../../../common/dtos/UserInput.dto";
 
 const schema = Joi.object<UserInput>({
     year: Joi.number().integer().min(1900).max(9999).required(),

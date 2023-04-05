@@ -5,7 +5,7 @@ import {
     FILEPATH_PREFIXES,
     POINTID_REGEX,
 } from "../config/constants";
-import { InputTime, UserInput } from "../dtos/UserInput.dto";
+import { InputTime, UserInput } from "../../common/dtos/UserInput.dto";
 import { addPadding, removePadding } from "./helpers/datePrefix.helper";
 
 class CloudStorageClient {

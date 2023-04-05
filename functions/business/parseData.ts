@@ -9,7 +9,7 @@ import {
     UsageData,
     Response,
 } from "../../common/data.types";
-import { Time, UserInput } from "../dtos/UserInput.dto";
+import { Time, UserInput } from "../../common/dtos/UserInput.dto";
 
 type FileData = {
     filename: string;
