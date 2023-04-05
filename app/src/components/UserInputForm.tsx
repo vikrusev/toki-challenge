@@ -7,14 +7,21 @@ import Dropdown from "./Dropdown";
 interface IProps {
     onSubmit: React.Dispatch<React.SetStateAction<string>>;
 }
-
+/**
+ * The UserInputForm includes 3 dropdowns for year, month and day respectively
+ * The values for them are created here
+ * Also, one input field of type text for listing Metering Point Ids
+ * @param param0 - submit event from parent component
+ */
 const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
+    // values to be used for the 3 dropdowns
     const availableDates = {
         years: ["2022", "2023"],
         months: createArray(12),
         days: createArray(31),
     };
 
+    // main properties
     const [meteringPointIds, setMeteringPointData] = useState<string>("");
     const [dateOptions, setDateOptions] = useState<InputTime>({
         year: "2022",
@@ -22,12 +29,15 @@ const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
         day: "1",
     });
 
-    const [shouldExecute, setShouldExecute] = useState<boolean>(false);
+    // if submit to parent should be executed
+    const [shouldExecuteSubmit, setShouldExecuteSubmit] =
+        useState<boolean>(false);
 
     useEffect(() => {
-        if (shouldExecute) {
-            setShouldExecute(false);
+        if (shouldExecuteSubmit) {
+            setShouldExecuteSubmit(false);
 
+            // build URL to fetch desired data from
             const fetchDataUrl = buildUrl({
                 dateOptions,
                 meteringPointIds: meteringPointIds
@@ -37,11 +47,12 @@ const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
 
             onSubmit(fetchDataUrl);
         }
-    }, [onSubmit, dateOptions, meteringPointIds, shouldExecute]);
+    }, [onSubmit, dateOptions, meteringPointIds, shouldExecuteSubmit]);
 
     const submitRequest = (event: any) => {
         event.preventDefault();
 
+        // basic regex check if the metering points are comma seperated numbers
         if (
             meteringPointIds &&
             !METERING_POINTIDS_REGEX.test(meteringPointIds)
@@ -52,7 +63,7 @@ const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
             return;
         }
 
-        setShouldExecute(true);
+        setShouldExecuteSubmit(true);
     };
 
     return (

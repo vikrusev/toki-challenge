@@ -20,11 +20,17 @@ interface IProps {
 }
 
 const Chart: React.FC<IProps> = ({ title }: IProps) => {
+    // main properties
     const [pricesData, setPricesData] = useState<Response[]>([]);
     const [usageData, setUsageData] = useState<TransformedUsageData[]>([]);
 
+    // url to fetch data from
     const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
 
+    /**
+     * Fetch Prices and Usage data
+     * @param {string} fetchDataUrl - the url
+     */
     const fetchData = async (fetchDataUrl: string) => {
         const response = await fetch(fetchDataUrl);
         const { pricesData, usageData }: ClientResponse = await response.json();
