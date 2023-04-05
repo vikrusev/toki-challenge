@@ -1,6 +1,6 @@
 import { ClientResponse } from "../../../common/data.types";
 
-export interface TransformedUsageData {
+interface TransformedUsageData {
     pointId: number;
     datetime: string;
 }
@@ -11,10 +11,11 @@ export interface TransformedUsageData {
  * @returns an array of reduced usageData
  */
 export const transformData = (
-    data: ClientResponse["usageData"]
-): TransformedUsageData[] =>
-    Object.values(
-        data.reduce((acc, curr) => {
+    pricesData: ClientResponse["pricesData"],
+    usageData: ClientResponse["usageData"]
+) => {
+    const usageDataTransformed: TransformedUsageData[] = Object.values(
+        usageData.reduce((acc, curr) => {
             curr.data.forEach((d) => {
                 const date = d.datetime;
                 // @ts-ignore
@@ -28,3 +29,13 @@ export const transformData = (
             return acc;
         }, {} as TransformedUsageData)
     );
+
+    return usageDataTransformed.length
+        ? usageDataTransformed.map((usage) => {
+              const price = pricesData.find(
+                  (price) => price.datetime === usage.datetime
+              );
+              return { ...usage, ...price };
+          })
+        : pricesData;
+};

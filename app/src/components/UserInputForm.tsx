@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { UserInput } from "../../../common/dtos/UserInput.dto";
-import { buildUrl, createArray } from "../utils/helper";
+import { createArray } from "../utils/helper";
 import { METERING_POINTIDS_REGEX, WHITESPACE_REGEX } from "../utils/regex";
 import Dropdown from "./Dropdown";
 
 interface IProps {
-    onSubmit: React.Dispatch<React.SetStateAction<string>>;
+    onSubmit: (formData: UserInput) => void;
 }
 /**
  * The UserInputForm includes 3 dropdowns for year, month and day respectively
@@ -36,38 +36,30 @@ const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
     useEffect(() => {
         if (shouldExecuteSubmit) {
             setShouldExecuteSubmit(false);
-
-            const { year, month, day, meteringPointIds } = formData;
-
-            // build URL to fetch desired data from
-            const fetchDataUrl = buildUrl({
-                dateOptions: {
-                    year,
-                    month,
-                    day,
-                },
-                meteringPointIds: meteringPointIds
-                    ?.replace(WHITESPACE_REGEX, "")
-                    .split(","),
-            });
-
-            onSubmit(fetchDataUrl);
+            onSubmit(formData);
         }
     }, [onSubmit, formData, shouldExecuteSubmit]);
 
     const submitRequest = (event: any) => {
         event.preventDefault();
 
+        const { meteringPointIds } = formData;
+
         // basic regex check if the metering points are comma seperated numbers
         if (
-            formData.meteringPointIds &&
-            !METERING_POINTIDS_REGEX.test(formData.meteringPointIds)
+            meteringPointIds &&
+            !METERING_POINTIDS_REGEX.test(meteringPointIds)
         ) {
             alert(
                 `Input field for Metering Point Ids must contain comma seperated numbers. Current: ${formData.meteringPointIds}`
             );
             return;
         }
+
+        formData.meteringPointIds = meteringPointIds?.replace(
+            WHITESPACE_REGEX,
+            ""
+        );
 
         setShouldExecuteSubmit(true);
     };

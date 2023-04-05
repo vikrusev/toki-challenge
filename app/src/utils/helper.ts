@@ -2,7 +2,7 @@ import { InputTime } from "../../../common/dtos/UserInput.dto";
 
 interface UrlBuildData {
     dateOptions: InputTime;
-    meteringPointIds?: string[];
+    meteringPointIds: string[];
 }
 
 export const createArray = (untilNumber: number) =>
@@ -13,7 +13,7 @@ export const createArray = (untilNumber: number) =>
 export const buildUrl = ({ dateOptions, meteringPointIds }: UrlBuildData) => {
     let url = `http://localhost:8080/?year=${dateOptions.year}`;
 
-    if (meteringPointIds?.length && meteringPointIds.filter(Boolean).length)
+    if (meteringPointIds.length && meteringPointIds.filter(Boolean).length)
         url += `&meteringPointIds=${meteringPointIds.join(",")}`;
 
     if (dateOptions.month !== "default") {

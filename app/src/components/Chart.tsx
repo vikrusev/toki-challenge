@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import {
-    LineChart,
     Line,
     XAxis,
     YAxis,
@@ -9,10 +8,14 @@ import {
     ResponsiveContainer,
     Brush,
     ComposedChart,
+    Bar,
+    Legend,
 } from "recharts";
 
-import { ClientResponse, Response } from "../../../common/data.types";
-import { transformData, TransformedUsageData } from "../utils/transform";
+import { ClientResponse } from "../../../common/data.types";
+import { UserInput } from "../../../common/dtos/UserInput.dto";
+import { buildUrl } from "../utils/helper";
+import { transformData } from "../utils/transform";
 import UserInputForm from "./UserInputForm";
 
 interface IProps {
@@ -21,8 +24,8 @@ interface IProps {
 
 const Chart: React.FC<IProps> = ({ title }: IProps) => {
     // main properties
-    const [pricesData, setPricesData] = useState<Response[]>([]);
-    const [usageData, setUsageData] = useState<TransformedUsageData[]>([]);
+    const [combinedData, setCombinedData] = useState<any>([]);
+    const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
 
     // url to fetch data from
     const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
@@ -34,8 +37,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     const fetchData = async (fetchDataUrl: string) => {
         const response = await fetch(fetchDataUrl);
         const { pricesData, usageData }: ClientResponse = await response.json();
-        setPricesData(pricesData);
-        setUsageData(transformData(usageData));
+        setCombinedData(transformData(pricesData, usageData));
     };
 
     useEffect(() => {
@@ -44,47 +46,42 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
         }
     }, [fetchDataUrl]);
 
+    const submitUserInput = ({
+        year,
+        month,
+        day,
+        meteringPointIds,
+    }: UserInput) => {
+        const meteringPointIdsArray = meteringPointIds?.split(",") || [];
+
+        // build URL to fetch desired data from
+        const fetchDataUrl = buildUrl({
+            dateOptions: {
+                year,
+                month,
+                day,
+            },
+            meteringPointIds: meteringPointIdsArray,
+        });
+
+        setFetchDataUrl(fetchDataUrl);
+        setMeteringPointIds(meteringPointIdsArray);
+    };
+
     return (
         <>
             <h1>{title}</h1>
 
-            <UserInputForm onSubmit={setFetchDataUrl} />
+            <UserInputForm onSubmit={submitUserInput} />
 
-            {pricesData?.length ? (
-                <ResponsiveContainer width="100%" height={200}>
-                    <LineChart
-                        width={500}
-                        height={200}
-                        data={pricesData}
-                        syncId="anyId"
-                        margin={{
-                            top: 10,
-                            right: 30,
-                            left: 0,
-                            bottom: 0,
-                        }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="datetime" />
-                        <YAxis />
-                        <Brush />
-                        <Tooltip />
-                        <Line
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#8884d8"
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            ) : null}
-
-            {/* {usageData.length &&
-            meteringPointIds.some((el) => `${el}` in usageData[0]) ? (
-                <ResponsiveContainer width="100%" height={400}>
+            {!combinedData?.length ? (
+                <h2>No data available</h2>
+            ) : (
+                <ResponsiveContainer width="100%" height={700}>
                     <ComposedChart
                         width={500}
                         height={200}
-                        data={usageData}
+                        data={combinedData}
                         syncId="anyId"
                         margin={{
                             top: 10,
@@ -95,17 +92,32 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                     >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="datetime" />
-                        <YAxis />
+                        <YAxis yAxisId="left" unit="kWh" />
+                        <YAxis yAxisId="right" orientation="right" unit="BGN" />
+                        <Brush />
                         <Tooltip />
-                        {/* <Bar barSize={20} dataKey="1234" fill="#ff7300" />
-              <Bar barSize={20} dataKey="5678" fill="#66fc03" /> */}
-            {/* {meteringPointIds.map(pointId => <Line type="monotone" dataKey={pointId} stroke="#ff7300" />)}
-                        <Line type="monotone" dataKey="1234" stroke="#ff7300" />
-                        <Line type="monotone" dataKey="5678" stroke="#66fc03" />
+                        <Legend />
+                        {meteringPointIds.map((el, index) => {
+                            return (
+                                <Bar
+                                    key={index}
+                                    barSize={20}
+                                    yAxisId="left"
+                                    dataKey={el}
+                                    fill="#ff7300"
+                                />
+                            );
+                        })}
+                        <Line
+                            yAxisId="right"
+                            type="monotone"
+                            dataKey="value"
+                            stroke="#8884d8"
+                            connectNulls
+                        />
                     </ComposedChart>
                 </ResponsiveContainer>
-            ) : null}
-             */}
+            )}
         </>
     );
 };
