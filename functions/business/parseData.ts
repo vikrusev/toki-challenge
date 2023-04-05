@@ -21,28 +21,23 @@ const isPricesData = (el: ParsedData["parsedData"]): el is PricesData[] => {
     return el.every((e) => "price" in e);
 };
 
-// type guard for UsageData
-const isUsageData = (el: ParsedData["parsedData"]): el is UsageData[] => {
-    return el.every((e) => "kwh" in e);
-};
-
 /**
  * Parse JsonL data and map to TypeScript objects
  * @returns an array w/ parsed data and mapped to objects
  */
 const parseData = (files: FileData[]): ParsedData[] => {
     // loop each given file
-    const parsedPricesDataFiles = files.map((file) => {
+    const parsedPricesDataFiles = files.map(({ data, filename }) => {
         // parse lines and filter empty lines if any
-        const lines = file.data.toString().split("\n");
+        const lines = data.toString().split("\n");
         const parsedData = lines
             .map(
                 (line): ParsedData["parsedData"][0] => line && JSON.parse(line)
             )
-            .filter((el) => el);
+            .filter(Boolean);
 
         return {
-            filename: file.filename,
+            filename,
             parsedData,
         };
     });
@@ -58,6 +53,7 @@ const groupUsageDataByPointId = (
 ): GroupedUsageData => {
     return usageDataFiles.reduce(
         (result: GroupedUsageData, { filename, parsedData }) => {
+            // we are sure that we have a match, because otherwise the file will not be downloaded
             const pointId = filename.match(POINTID_REGEX)![1];
 
             if (!result[pointId]) result[pointId] = [];
@@ -70,15 +66,15 @@ const groupUsageDataByPointId = (
 };
 
 const aggregateAverageRecords = (data: Response[], month?: Time) => {
-    const aggregatedPricesRecords = data.reduce((acc, data) => {
-        const date = new Date(data.datetime!);
+    const aggregatedRecords = data.reduce((acc, data) => {
+        const date = new Date(data.datetime);
         const key = month ? `${date.getDate()}` : `${date.getMonth() + 1}`;
         if (!(key in acc)) acc[key] = [];
         acc[key].push(data.value);
         return acc;
     }, {} as AggregatedData);
 
-    return Object.entries(aggregatedPricesRecords).map(([date, values]) => {
+    return Object.entries(aggregatedRecords).map(([date, values]) => {
         const sum = values.reduce((acc, val) => acc + val, 0);
         return {
             datetime: date,
@@ -92,11 +88,13 @@ const aggregateAverageRecords = (data: Response[], month?: Time) => {
  * @returns ready for ClientResponse data objects
  */
 const cleanData = (
-    pricesData: { filename: string; parsedData: PricesData[] }[],
+    pricesData: ParsedData[],
     groupedUsageData: GroupedUsageData
 ): ClientResponse => {
     const cleanedPricesData = pricesData
-        .flatMap(({ parsedData }) => parsedData)
+        .flatMap(({ parsedData }) =>
+            isPricesData(parsedData) ? parsedData : []
+        )
         .map(({ timestamp, price }) => ({
             datetime: new Date(timestamp!).toString(),
             value: price,
@@ -127,34 +125,22 @@ const cleanData = (
  * @returns ready for ClientResponse data
  */
 const parseAndDistributeData = (files: FileData[]): ClientResponse => {
-    // Stage #1 - filter prices and usage data
-    const pricesDataFiles = files.filter(({ filename }) =>
+    // Stage #1 - parse content of the .jsonl files
+    const parsedFiles = parseData(files);
+
+    // Stage #2 - filter prices and usage data
+    const pricesDataFiles = parsedFiles.filter(({ filename }) =>
         filename.startsWith(FILEPATH_PREFIXES.prices)
     );
-    const usageDataFiles = files.filter(({ filename }) =>
+    const usageDataFiles = parsedFiles.filter(({ filename }) =>
         filename.startsWith(FILEPATH_PREFIXES.usage)
     );
 
-    // Stage #2 - parse content of the .jsonl files also assure types with type guards
-    const pricesData = parseData(pricesDataFiles).map(
-        ({ filename, parsedData }) => ({
-            filename,
-            parsedData: isPricesData(parsedData) ? parsedData : [],
-        })
-    );
-
-    const usageData = parseData(usageDataFiles).map(
-        ({ filename, parsedData }) => ({
-            filename,
-            parsedData: isUsageData(parsedData) ? parsedData : [],
-        })
-    );
-
     // Stage #3 - group usage datas by pointId
-    const groupedUsageData = groupUsageDataByPointId(usageData);
+    const groupedUsageDataFiles = groupUsageDataByPointId(usageDataFiles);
 
     // Stage #4 - return cleaned data / use only what is needed
-    return cleanData(pricesData, groupedUsageData);
+    return cleanData(pricesDataFiles, groupedUsageDataFiles);
 };
 
 /**
