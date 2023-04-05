@@ -1,10 +1,9 @@
-import React, { Dispatch, SetStateAction } from "react";
-import { InputTime } from "../../../common/dtos/UserInput.dto";
+import React, { ChangeEventHandler } from "react";
 
 interface IProps {
     type: string;
     values: string[];
-    onChange: Dispatch<SetStateAction<InputTime>>;
+    onChange: ChangeEventHandler<HTMLSelectElement>;
 }
 
 const Dropdown: React.FC<IProps> = ({ type, values, onChange }: IProps) => {
@@ -14,12 +13,8 @@ const Dropdown: React.FC<IProps> = ({ type, values, onChange }: IProps) => {
             <select
                 defaultValue={values[0]}
                 id={`${type}-select`}
-                onChange={(event) =>
-                    onChange((prevValue) => ({
-                        ...prevValue,
-                        [type]: event.target.value,
-                    }))
-                }
+                name={type}
+                onChange={onChange}
             >
                 {type !== "year" && <option value="default">00</option>}
 
