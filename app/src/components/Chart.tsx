@@ -25,15 +25,14 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
 
     const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
 
-    useEffect(() => {
-        async function fetchData(fetchDataUrl: string) {
-            const response = await fetch(fetchDataUrl);
-            const { pricesData, usageData }: ClientResponse =
-                await response.json();
-            setPricesData(pricesData);
-            setUsageData(transformData(usageData));
-        }
+    const fetchData = async (fetchDataUrl: string) => {
+        const response = await fetch(fetchDataUrl);
+        const { pricesData, usageData }: ClientResponse = await response.json();
+        setPricesData(pricesData);
+        setUsageData(transformData(usageData));
+    };
 
+    useEffect(() => {
         if (fetchDataUrl) {
             fetchData(fetchDataUrl);
         }
