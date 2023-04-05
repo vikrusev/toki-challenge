@@ -12,17 +12,17 @@ import { SECRET_NAME, SECRET_KEYFILENAME_PATH_PROD } from "./constants";
  * @param {boolean} isProduction - taken from the CI_PROD env variable
  */
 const getStorageOptions = async (
-  isProduction: boolean
+    isProduction: boolean
 ): Promise<StorageOptions> => {
-  // production run will have the config file mounted in /secrets
-  if (isProduction) {
-    return {
-      keyFilename: `${SECRET_KEYFILENAME_PATH_PROD}/${SECRET_NAME}`,
-    };
-  }
+    // production run will have the config file mounted in /secrets
+    if (isProduction) {
+        return {
+            keyFilename: `${SECRET_KEYFILENAME_PATH_PROD}/${SECRET_NAME}`,
+        };
+    }
 
-  // otherwise, get the configuration from the Secret Manager
-  return await getConfigurationFromSecretManager();
+    // otherwise, get the configuration from the Secret Manager
+    return await getConfigurationFromSecretManager();
 };
 
 /**
@@ -32,26 +32,26 @@ const getStorageOptions = async (
  * @throws error if the secret payload is empty or does not exist
  */
 const getConfigurationFromSecretManager = async (): Promise<StorageOptions> => {
-  // create a client to access the Secret Manager service
-  const client = new SecretManagerServiceClient();
+    // create a client to access the Secret Manager service
+    const client = new SecretManagerServiceClient();
 
-  // define the name of the secret
-  const secretFullPath = `projects/toki-challenge-382218/secrets/${SECRET_NAME}/versions/latest`;
+    // define the name of the secret
+    const secretFullPath = `projects/toki-challenge-382218/secrets/${SECRET_NAME}/versions/latest`;
 
-  // get secret version data
-  const [version] = await client.accessSecretVersion({
-    name: secretFullPath,
-  });
-  const payload = version?.payload?.data?.toString();
+    // get secret version data
+    const [version] = await client.accessSecretVersion({
+        name: secretFullPath,
+    });
+    const payload = version?.payload?.data?.toString();
 
-  if (!payload) {
-    console.error(
-      `Payload for secret ${secretFullPath} does not exist or is empty`
-    );
-    throw new Error("Secret Payload Empty");
-  }
+    if (!payload) {
+        console.error(
+            `Payload for secret ${secretFullPath} does not exist or is empty`
+        );
+        throw new Error("Secret Payload Empty");
+    }
 
-  return { credentials: JSON.parse(payload) };
+    return { credentials: JSON.parse(payload) };
 };
 
 export default getStorageOptions;

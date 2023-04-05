@@ -19,29 +19,33 @@ import parsePriceUsageData from "./business/parseData";
  * Providing METERING_POINT_ID is optional for all variants from above
  */
 const mainEntrypoint = async (req: any, res: any) => {
-  // check if user input is valid
-  const isUserInputValid = validationSchema.validate(req.query);
-  if (isUserInputValid.error) {
-    throw new Error(`User Input is invalid. Error: ${isUserInputValid.error}`);
-  }
+    // check if user input is valid
+    const isUserInputValid = validationSchema.validate(req.query);
+    if (isUserInputValid.error) {
+        throw new Error(
+            `User Input is invalid. Error: ${isUserInputValid.error}`
+        );
+    }
 
-  // read options for Cloud Storage
-  const storageOptions = await getStorageOptions(Boolean(process.env.CI_PROD));
+    // read options for Cloud Storage
+    const storageOptions = await getStorageOptions(
+        Boolean(process.env.CI_PROD)
+    );
 
-  // build a CloudStorageClient to work w/ requested data
-  const cloudStorageClient = new CloudStorageClient(storageOptions);
+    // build a CloudStorageClient to work w/ requested data
+    const cloudStorageClient = new CloudStorageClient(storageOptions);
 
-  // get user requested data
-  const requestedData = await cloudStorageClient.getUserData(req.query);
+    // get user requested data
+    const requestedData = await cloudStorageClient.getUserData(req.query);
 
-  // parse and aggregate requested data
-  const aggregatedData = parsePriceUsageData(requestedData, req.query);
+    // parse and aggregate requested data
+    const aggregatedData = parsePriceUsageData(requestedData, req.query);
 
-  // simply allow CORS from all origins
-  res.set("Access-Control-Allow-Origin", "*");
+    // simply allow CORS from all origins
+    res.set("Access-Control-Allow-Origin", "*");
 
-  // send response back to client
-  res.send(aggregatedData);
+    // send response back to client
+    res.send(aggregatedData);
 };
 
 export { mainEntrypoint };

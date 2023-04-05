@@ -1,16 +1,36 @@
 steps:
-- name: 'gcr.io/cloud-builders/npm'
-  dir: 'functions'
-  args: [ 'ci' ]
-- name: 'gcr.io/cloud-builders/npm'
-  dir: 'functions'
-  args: [ 'run', 'compile:prod' ]
-- name: 'bash'
-  dir: 'functions'
-  args: [ cp,'package.json', 'dist/functions' ]
-- name: 'bash'
-  dir: 'functions'
-  args: [ cp,'package-lock.json', 'dist/functions' ]
-- name: gcr.io/cloud-builders/gcloud
-  dir: 'functions'
-  args: [ 'functions', 'deploy', 'price-usage-aggregation', '--set-secrets', '/secrets/toki-service-account=toki-service-account:latest', '--set-env-vars', 'CI_PROD=true', '--gen2', '--allow-unauthenticated', '--region', 'europe-west1', '--runtime', 'nodejs18', '--trigger-http', '--source', 'dist/functions', '--entry-point', 'mainEntrypoint' ]
+    - name: "gcr.io/cloud-builders/npm"
+      dir: "functions"
+      args: ["ci"]
+    - name: "gcr.io/cloud-builders/npm"
+      dir: "functions"
+      args: ["run", "compile:prod"]
+    - name: "bash"
+      dir: "functions"
+      args: [cp, "package.json", "dist/functions"]
+    - name: "bash"
+      dir: "functions"
+      args: [cp, "package-lock.json", "dist/functions"]
+    - name: gcr.io/cloud-builders/gcloud
+      dir: "functions"
+      args:
+          [
+              "functions",
+              "deploy",
+              "price-usage-aggregation",
+              "--set-secrets",
+              "/secrets/toki-service-account=toki-service-account:latest",
+              "--set-env-vars",
+              "CI_PROD=true",
+              "--gen2",
+              "--allow-unauthenticated",
+              "--region",
+              "europe-west1",
+              "--runtime",
+              "nodejs18",
+              "--trigger-http",
+              "--source",
+              "dist/functions",
+              "--entry-point",
+              "mainEntrypoint",
+          ]

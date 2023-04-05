@@ -18,6 +18,6 @@ export const YEAR_MONTH_DAY_REGEX = /(\d{4})\/(\d{2})\/((\d{2})|(\d{1}))/;
 
 // inital prefixes of files in the Cloud Storage
 export const FILEPATH_PREFIXES = {
-  prices: "prices",
-  usage: "usage",
+    prices: "prices",
+    usage: "usage",
 };
