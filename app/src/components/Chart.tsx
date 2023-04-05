@@ -23,6 +23,20 @@ interface IProps {
 }
 
 const Chart: React.FC<IProps> = ({ title }: IProps) => {
+    // sequentially pickable colors for the Bars
+    const chartDataColors = [
+        "#eeb8b8",
+        "#c5dad1",
+        "#aeddef",
+        "#c9cbe0",
+        "#cfdd8e",
+        "#72b7b2",
+        "#dadafc",
+        "#b279a2",
+        "#ff9da6",
+        "#668cff",
+    ];
+
     // main properties
     const [combinedData, setCombinedData] = useState<any>([]);
     const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
@@ -104,7 +118,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                                     barSize={20}
                                     yAxisId="left"
                                     dataKey={el}
-                                    fill="#ff7300"
+                                    fill={chartDataColors[index]}
                                 />
                             );
                         })}
@@ -112,7 +126,9 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                             yAxisId="right"
                             type="monotone"
                             dataKey="value"
-                            stroke="#8884d8"
+                            stroke="#0000FF"
+                            strokeWidth={4}
+                            activeDot={{ r: 8 }}
                             connectNulls
                         />
                     </ComposedChart>
