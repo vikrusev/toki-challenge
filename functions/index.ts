@@ -1,7 +1,7 @@
 import CloudStorageClient from "./business/CloudStorageClient";
 import getStorageOptions from "./config/getStorageOptions";
 import validationSchema from "./business/validators/userInput.validator";
-import parsePriceUsageData from "./business/parseData";
+import evaluateRequestedData from "./business/parseData";
 
 /**
  * Retrieve data from usage/ and prices/ objects from TOKI's
@@ -38,14 +38,14 @@ const mainEntrypoint = async (req: any, res: any) => {
     // get user requested data
     const requestedData = await cloudStorageClient.getUserData(req.query);
 
-    // parse and aggregate requested data
-    const aggregatedData = parsePriceUsageData(requestedData, req.query);
+    // evaluate requested data
+    const clientData = evaluateRequestedData(requestedData, req.query);
 
     // simply allow CORS from all origins
     res.set("Access-Control-Allow-Origin", "*");
 
     // send response back to client
-    res.send(aggregatedData);
+    res.send(clientData);
 };
 
 export { mainEntrypoint };

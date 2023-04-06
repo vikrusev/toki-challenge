@@ -1,7 +1,4 @@
-import { Time } from "../../../common/dtos/UserInput.dto";
+export const addPadding = (value: string) => value?.toString().padStart(2, "0");
 
-export const addPadding = (value: Time | undefined) =>
-    value?.toString().padStart(2, "0");
-
-export const removePadding = (value: Time | undefined) =>
+export const removePadding = (value: string) =>
     value && Number(value).toString();

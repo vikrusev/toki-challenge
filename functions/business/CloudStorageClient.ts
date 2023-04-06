@@ -7,6 +7,7 @@ import {
 } from "../config/constants";
 import { InputTime, UserInput } from "../../common/dtos/UserInput.dto";
 import { addPadding, removePadding } from "./helpers/datePrefix.helper";
+import { RawFileData } from "../types/data.types";
 
 class CloudStorageClient {
     // a Bucket connected to TOKI's Google Cloud Storage
@@ -34,7 +35,10 @@ class CloudStorageClient {
      * @param {UserInput} param0 - defining time and eventually the metering point ids
      * @returns an array w/ mapped filenames w/ their data
      */
-    getUserData = async ({ meteringPointIds, ...times }: UserInput) => {
+    getUserData = async ({
+        meteringPointIds,
+        ...times
+    }: UserInput): Promise<RawFileData[]> => {
         // prepare prefixes
         const timePrefixPrices = this.timePaddedPrefixPrices(times);
         const timePrefixUsage = this.timePaddedPrefixUsage(times);
