@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { ApiCallback } from "../utils/FunctionCallback";
-import { ApplicationError } from "./exceptions";
+import { ApplicationException } from "./exceptions";
 
 type ApiHandler = (request: Request) => Promise<object>;
 
@@ -16,7 +16,7 @@ const appErrorWrapper = (handler: ApiHandler) => {
             const handlerResult = await handler(request);
             return ApiCallback.success(handlerResult);
         } catch (error) {
-            if (error instanceof ApplicationError) {
+            if (error instanceof ApplicationException) {
                 console.error(`Application Error: ${JSON.stringify(error)}`);
                 return ApiCallback.exception(
                     {

@@ -1,4 +1,4 @@
-class ApplicationError {
+class ApplicationException {
     statusCode = 400;
     message = "";
 
@@ -8,16 +8,26 @@ class ApplicationError {
     }
 }
 
-class BadRequestException extends ApplicationError {
+class BadRequestException extends ApplicationException {
     constructor(message: string) {
         super(400, message);
     }
 }
 
-class InternalServerException extends ApplicationError {
-    constructor(message: string) {
-        super(500, message);
+class ServerException {
+    statusCode = 500;
+    externalMessage = "";
+    internalMessage = "";
+
+    constructor(
+        statusCode: number,
+        externalMessage: string,
+        internalMessage?: string
+    ) {
+        this.statusCode = statusCode;
+        this.externalMessage = externalMessage;
+        this.internalMessage = internalMessage ?? "";
     }
 }
 
-export { ApplicationError, BadRequestException, InternalServerException };
+export { ApplicationException, BadRequestException, ServerException };
