@@ -1,5 +1,7 @@
 import ClipLoader from "react-spinners/ClipLoader";
 import React, { CSSProperties, useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
     Line,
     XAxis,
@@ -42,11 +44,26 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     const fetchData = async (fetchDataUrl: string) => {
         setIsLoading(true);
 
-        const response = await fetch(fetchDataUrl);
-        const responseJson = await response.json();
-        setCombinedData(JSON.parse(responseJson.body));
-
-        setIsLoading(false);
+        try {
+            const response = await fetch(fetchDataUrl);
+            if (response.status > 400) {
+                throw new Error(response.statusText);
+            }
+            const responseJson = await response.json();
+            setCombinedData(JSON.parse(responseJson.body));
+        } catch (err) {
+            toast.error((err as Error).message, {
+                position: "top-center",
+                autoClose: 6000,
+                // hideProgressBar: true,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -86,6 +103,8 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     return (
         <div style={{ position: "relative" }}>
             <h1>{title}</h1>
+
+            <ToastContainer />
 
             <ClipLoader
                 size={150}
