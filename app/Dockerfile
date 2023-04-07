@@ -10,10 +10,10 @@ ENV PATH /app/node_modules/.bin:$PATH
 RUN npm i --global serve
 
 # copy the common directory
-COPY ./common /opt/common
+COPY ./common /opt/project/common
 
 # Set working directory inside the container
-WORKDIR /opt/project
+WORKDIR /opt/project/${SERVICE_NAME}
 
 # Copy npm files from the host to the container
 COPY ${SERVICE_NAME}/package*.json ./
