@@ -2,6 +2,7 @@ import { StorageOptions } from "@google-cloud/storage";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 
 import { SECRET_NAME, SECRET_KEYFILENAME_PATH_PROD } from "./constants";
+import { ServiceUnavailable } from "../utils/exceptions";
 
 /**
  * Retrieve TOKI's Google Storage Options
@@ -45,10 +46,10 @@ const getConfigurationFromSecretManager = async (): Promise<StorageOptions> => {
     const payload = version?.payload?.data?.toString();
 
     if (!payload) {
-        console.error(
-            `Payload for secret ${secretFullPath} does not exist or is empty`
+        throw new ServiceUnavailable(
+            "Something is not available on our side",
+            `Payload of secret ${secretFullPath} does not exist or is empty`
         );
-        throw new Error("Secret Payload Empty");
     }
 
     return { credentials: JSON.parse(payload) };

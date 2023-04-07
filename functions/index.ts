@@ -32,10 +32,10 @@ const mainEntrypoint = async (request: Request, response: Response) => {
         return result.generateResponseJSON(response);
     } catch (error) {
         // handle Internal Server Error
-        console.error(`Internal Server Error: ${error}`);
+        console.error(`Server Faulty: ${error}`);
 
         return ApiCallback.error({
-            message: "Internal Server Error",
+            message: "Server Faulty",
         }).generateResponseJSON(response);
     }
 };

@@ -16,18 +16,40 @@ class BadRequestException extends ApplicationException {
 
 class ServerException {
     statusCode = 500;
-    externalMessage = "";
-    internalMessage = "";
+    _externalMessage = "";
+    _internalMessage = "";
 
     constructor(
-        statusCode: number,
         externalMessage: string,
-        internalMessage?: string
+        internalMessage?: string,
+        statusCode?: number
     ) {
-        this.statusCode = statusCode;
-        this.externalMessage = externalMessage;
-        this.internalMessage = internalMessage ?? "";
+        this._externalMessage = externalMessage;
+        this._internalMessage = internalMessage ?? externalMessage;
+        this.statusCode = statusCode ?? this.statusCode;
+    }
+
+    public get externalMessage() {
+        return this._externalMessage ?? "Unknown Error";
+    }
+
+    public get internalMessage() {
+        return (
+            this._internalMessage ??
+            `Missing internal message. External is: ${this.externalMessage}`
+        );
     }
 }
 
-export { ApplicationException, BadRequestException, ServerException };
+class ServiceUnavailable extends ServerException {
+    constructor(externalMessage: string, internalMessage?: string) {
+        super(externalMessage, internalMessage, 503);
+    }
+}
+
+export {
+    ApplicationException,
+    BadRequestException,
+    ServerException,
+    ServiceUnavailable,
+};

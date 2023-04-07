@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { ApiCallback } from "../utils/FunctionCallback";
-import { ApplicationException } from "./exceptions";
+import { ApplicationException, ServerException } from "./exceptions";
 
 type ApiHandler = (request: Request) => Promise<object>;
 
@@ -16,24 +16,37 @@ const appErrorWrapper = (handler: ApiHandler) => {
             const handlerResult = await handler(request);
             return ApiCallback.success(handlerResult);
         } catch (error) {
+            // handle application exceptions
             if (error instanceof ApplicationException) {
-                console.error(`Application Error: ${JSON.stringify(error)}`);
+                console.error(
+                    `Application Exception: ${JSON.stringify(error)}`
+                );
                 return ApiCallback.exception(
                     {
                         message: error.message,
                     },
-                    400
+                    error.statusCode
                 );
             }
 
-            console.error(
-                `Internal Server Error: ${(error as Error).toString()}`
-            );
+            // handle server exceptions
+            if (error instanceof ServerException) {
+                console.error(
+                    `Internal Server Exception: ${error.internalMessage}`
+                );
+                return ApiCallback.exception(
+                    {
+                        message: error.externalMessage,
+                    },
+                    error.statusCode
+                );
+            }
+
+            // handle any other faulty exceptions
+            console.error(`Server Error: ${JSON.stringify(error as Error)}`);
             return ApiCallback.error(
                 {
-                    message: `My not so encoded Internal Server Error: ${
-                        (error as Error)?.message || "Unknown Error"
-                    }`,
+                    message: (error as Error)?.message ?? "Unknown Error",
                 },
                 500
             );
