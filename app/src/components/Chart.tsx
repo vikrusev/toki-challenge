@@ -76,9 +76,11 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
         display: "block",
         margin: "0 auto",
         position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
+        top: "45%",
+        left: "45%",
+        borderWidth: "5px",
+        borderColor: "#ff8600 #ffc600 transparent",
+        zIndex: "999",
     };
 
     return (
@@ -86,7 +88,6 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
             <h1>{title}</h1>
 
             <ClipLoader
-                color="red"
                 size={150}
                 loading={isLoading}
                 cssOverride={clipLoaderCss}
