@@ -7,7 +7,7 @@ import {
 } from "../config/constants";
 import { InputTime, UserInput } from "../../common/dtos/UserInput.dto";
 import { addPadding, removePadding } from "./helpers/datePrefix.helper";
-import { RawFileData } from "../types/data.types";
+import { RawFileData } from "../types/information.types";
 
 class CloudStorageClient {
     // a Bucket connected to TOKI's Google Cloud Storage

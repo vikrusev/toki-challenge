@@ -6,7 +6,7 @@ import {
     UsageData,
     FullFlattenData,
     RawFileData,
-} from "../types/data.types";
+} from "../types/information.types";
 import { InputTime } from "../../common/dtos/UserInput.dto";
 import { ClientResponse } from "../../common/response.types";
 
