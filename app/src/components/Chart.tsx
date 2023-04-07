@@ -104,7 +104,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         }}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="datetime" />
+                        <XAxis dataKey="datetimeKey" />
                         <YAxis yAxisId="left" unit="kWh" />
                         <YAxis yAxisId="right" orientation="right" unit="BGN" />
                         <Brush />

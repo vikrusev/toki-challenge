@@ -58,6 +58,7 @@ const parseFiles = (files: RawFileData[]): ParsedData[] => {
 /**
  * Groups data based on @param timeInput
  * Either on Hourly, Daily or Monthly basis
+ * Also, adds a property datetimeKey of the key data was grouped by
  * @param timeInput - month and day are both optional, used to define the group key
  *  - if month is not given - group on Monthly basis
  *  - if month is given, day is not - group on Daily basis
@@ -76,7 +77,7 @@ const groupData = (
             const key = getGroupKey(date, timeInput);
 
             // prepare initial datetime field, which is a must-have
-            acc[key] = acc[key] || { datetime };
+            acc[key] = acc[key] || { datetime, datetimeKey: key };
 
             // if the data entry is prices, we will have electricityPrice
             if (electricityPrice) {
@@ -104,23 +105,26 @@ const groupData = (
  * Calculate average electricity price and metering points values for each Hour / Day / Month
  */
 const calculateAverageValues = (data: FullFlattenData[]): ClientResponse[] => {
-    return data.map(({ datetime, electricityPrice, ...pointIdData }) => {
-        const averageElectricityPrice = getArrayAverage(electricityPrice);
+    return data.map(
+        ({ datetimeKey, datetime, electricityPrice, ...pointIdData }) => {
+            const averageElectricityPrice = getArrayAverage(electricityPrice);
 
-        const averagedPointIdData = Object.entries(pointIdData).reduce(
-            (acc, [pointId, values]) => ({
-                ...acc,
-                [pointId]: getArrayAverage(values as number[]),
-            }),
-            {} as Record<string, number>
-        );
+            const averagedPointIdData = Object.entries(pointIdData).reduce(
+                (acc, [pointId, values]) => ({
+                    ...acc,
+                    [pointId]: getArrayAverage(values as number[]),
+                }),
+                {} as Record<string, number>
+            );
 
-        return {
-            datetime,
-            electricityPrice: averageElectricityPrice,
-            ...averagedPointIdData,
-        };
-    });
+            return {
+                datetimeKey,
+                datetime,
+                electricityPrice: averageElectricityPrice,
+                ...averagedPointIdData,
+            };
+        }
+    );
 };
 
 /**

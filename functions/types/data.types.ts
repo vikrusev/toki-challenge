@@ -33,6 +33,7 @@ export interface FlattenData {
 
 // aggregated data w/ combined prices and usage datas
 export interface FullFlattenData {
+    datetimeKey: number;
     datetime: number;
     electricityPrice: number[];
     [pointId: string]: number[] | number;
