@@ -56,7 +56,8 @@ class CloudStorageClient {
                 meteringPointIds &&
                 file.name.startsWith(`${timePrefixUsage}/`)
             ) {
-                const pointId = file.name.match(POINTID_REGEX)![1];
+                const pointId =
+                    file.name.match(POINTID_REGEX)?.[1] || "unknown";
                 return meteringPointIds.split(",").includes(pointId);
             }
 
