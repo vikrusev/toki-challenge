@@ -23,11 +23,9 @@ class ApiCallback {
 
     public generateResponseJSON(response: Response) {
         response.status(this.statusCode);
+        // simply allow CORS from all origins
+        response.setHeader("Access-Control-Allow-Origin", "*");
         response.send({
-            headers: {
-                // simply allow CORS from all origins
-                "Access-Control-Allow-Origin": "*",
-            },
             body: JSON.stringify(this.body),
         });
     }

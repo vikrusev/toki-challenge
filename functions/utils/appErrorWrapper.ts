@@ -26,7 +26,17 @@ const appErrorWrapper = (handler: ApiHandler) => {
                 );
             }
 
-            throw error;
+            console.error(
+                `Internal Server Error: ${(error as Error).toString()}`
+            );
+            return ApiCallback.error(
+                {
+                    message: `My not so encoded Internal Server Error: ${
+                        (error as Error)?.message || "Unknown Error"
+                    }`,
+                },
+                500
+            );
         }
     };
 };
