@@ -43,10 +43,10 @@ const appErrorWrapper = (handler: ApiHandler) => {
             }
 
             // handle any other faulty exceptions
-            console.error(`Server Error: ${JSON.stringify(error as Error)}`);
+            console.error(`Server Error: ${error}`);
             return ApiCallback.error(
                 {
-                    message: (error as Error)?.message ?? "Unknown Error",
+                    message: "Something went wrong on our side",
                 },
                 500
             );
