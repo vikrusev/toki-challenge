@@ -80,7 +80,11 @@ const groupByTimeInput = (
             const key = getGroupKey(date, timeInput);
 
             // prepare initial datetime field, which is a must-have
-            acc[key] = acc[key] || { datetime, datetimeKey: key };
+            acc[key] = acc[key] || {
+                datetime,
+                datetimeKey: +key,
+                electricityPrice: [],
+            };
 
             // if the data entry is prices, we will have electricityPrice
             if (electricityPrice) {
@@ -89,6 +93,7 @@ const groupByTimeInput = (
 
             // otherwise loop metering point datas
             Object.entries(pointIdDatas).forEach(([pointId, values]) => {
+                acc[key][pointId] = acc[key][pointId] || [];
                 acc[key][pointId].push(values);
             });
 
