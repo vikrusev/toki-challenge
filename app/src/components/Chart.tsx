@@ -13,8 +13,8 @@ import {
 } from "recharts";
 
 import { ClientResponse } from "../../../common/response.types";
-import { UserInput } from "../../../common/dtos/UserInput.dto";
-import { buildUrl } from "../utils/helper";
+import { InputTime, UserInput } from "../../../common/dtos/UserInput.dto";
+import { buildUrl, chartDataColors, tickFormatter } from "../utils/chart.utils";
 import UserInputForm from "./UserInputForm";
 
 interface IProps {
@@ -22,22 +22,11 @@ interface IProps {
 }
 
 const Chart: React.FC<IProps> = ({ title }: IProps) => {
-    // sequentially pickable colors for the Bars
-    const chartDataColors = [
-        "#eeb8b8",
-        "#c5dad1",
-        "#aeddef",
-        "#c9cbe0",
-        "#cfdd8e",
-        "#72b7b2",
-        "#dadafc",
-        "#b279a2",
-        "#ff9da6",
-        "#668cff",
-    ];
-
-    // main properties
+    // data for charts
     const [combinedData, setCombinedData] = useState<ClientResponse[]>([]);
+
+    // user input data
+    const [timeInput, setTimeInput] = useState<InputTime>();
     const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
 
     // url to fetch data from
@@ -60,24 +49,19 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     }, [fetchDataUrl]);
 
     const submitUserInput = ({
-        year,
-        month,
-        day,
         meteringPointIds,
+        ...dateOptions
     }: UserInput) => {
         const meteringPointIdsArray = meteringPointIds?.split(",") || [];
 
         // build URL to fetch desired data from
         const fetchDataUrl = buildUrl({
-            dateOptions: {
-                year,
-                month,
-                day,
-            },
+            dateOptions,
             meteringPointIds: meteringPointIdsArray,
         });
 
         setFetchDataUrl(fetchDataUrl);
+        setTimeInput(dateOptions);
         setMeteringPointIds(meteringPointIdsArray);
     };
 
@@ -104,7 +88,12 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         }}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="datetimeKey" />
+                        <XAxis
+                            dataKey="datetimeKey"
+                            tickFormatter={(value) =>
+                                tickFormatter(value, timeInput)
+                            }
+                        />
                         <YAxis yAxisId="left" unit="kWh" />
                         <YAxis yAxisId="right" orientation="right" unit="BGN" />
                         <Brush />

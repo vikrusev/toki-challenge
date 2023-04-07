@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { UserInput } from "../../../common/dtos/UserInput.dto";
-import { createArray } from "../utils/helper";
+import { createArray } from "../utils/chart.utils";
 import { METERING_POINTIDS_REGEX, WHITESPACE_REGEX } from "../utils/regex";
 import Dropdown from "./Dropdown";
 
