@@ -34,12 +34,19 @@ const monthNames = [
     "DEC",
 ];
 
-export const tickFormatter = (value: number, dateOptions?: InputTime) => {
-    if (dateOptions?.day && dateOptions?.day !== "default")
-        return value <= 11 ? `${value}am` : `${value}pm`;
+export const tickFormatter = (value: string, dateOptions?: InputTime) => {
+    if (
+        dateOptions?.day &&
+        dateOptions?.month &&
+        dateOptions?.day !== "default" &&
+        dateOptions?.month !== "default"
+    )
+        return +value <= 11 ? `${value}am` : `${value}pm`;
 
     if (dateOptions?.month && dateOptions?.month !== "default") {
-        switch (dateOptions?.month) {
+        if (+value >= 10 && +value <= 20) return `${value}th`;
+
+        switch (value.slice(-1)) {
             case "1":
                 return `${value}st`;
             case "2":
@@ -51,7 +58,7 @@ export const tickFormatter = (value: number, dateOptions?: InputTime) => {
         }
     }
 
-    return monthNames[value - 1];
+    return monthNames[+value - 1];
 };
 
 export const createArray = (untilNumber: number) =>
