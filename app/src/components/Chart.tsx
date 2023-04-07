@@ -122,15 +122,21 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         <Brush />
                         <Tooltip />
                         <Legend />
+                        {/* Adding a Bar for each metering point
+                        from the user input that exists in the data */}
                         {meteringPointIds.map((el, index) => {
                             return (
-                                <Bar
-                                    key={index}
-                                    barSize={20}
-                                    yAxisId="left"
-                                    dataKey={el}
-                                    fill={chartDataColors[index]}
-                                />
+                                combinedData.some((e) =>
+                                    e.hasOwnProperty(el)
+                                ) && (
+                                    <Bar
+                                        key={index}
+                                        barSize={20}
+                                        yAxisId="left"
+                                        dataKey={el}
+                                        fill={chartDataColors[index]}
+                                    />
+                                )
                             );
                         })}
                         <Line
