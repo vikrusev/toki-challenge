@@ -12,10 +12,9 @@ import {
     Legend,
 } from "recharts";
 
-import { ClientResponse } from "../../../common/data.types";
+import { ClientResponse } from "../../../common/response.types";
 import { UserInput } from "../../../common/dtos/UserInput.dto";
 import { buildUrl } from "../utils/helper";
-import { transformData } from "../utils/transform";
 import UserInputForm from "./UserInputForm";
 
 interface IProps {
@@ -38,7 +37,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     ];
 
     // main properties
-    const [combinedData, setCombinedData] = useState<any>([]);
+    const [combinedData, setCombinedData] = useState<ClientResponse[]>([]);
     const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
 
     // url to fetch data from
@@ -50,8 +49,8 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
      */
     const fetchData = async (fetchDataUrl: string) => {
         const response = await fetch(fetchDataUrl);
-        const { pricesData, usageData }: ClientResponse = await response.json();
-        setCombinedData(transformData(pricesData, usageData));
+        const responseJson: ClientResponse[] = await response.json();
+        setCombinedData(responseJson);
     };
 
     useEffect(() => {
@@ -125,7 +124,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         <Line
                             yAxisId="right"
                             type="monotone"
-                            dataKey="value"
+                            dataKey="electricityPrice"
                             stroke="#0000FF"
                             strokeWidth={4}
                             activeDot={{ r: 8 }}
