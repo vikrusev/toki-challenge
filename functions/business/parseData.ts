@@ -27,7 +27,7 @@ const getArrayAverage = (values: number[]) =>
 
 // get UTC representation of key to group data on
 const getGroupKey = (date: Date, { month, day }: InputTime) =>
-    day
+    day && month
         ? `${date.getUTCHours()}`
         : month
         ? `${date.getUTCDate()}`
