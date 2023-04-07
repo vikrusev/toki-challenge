@@ -120,7 +120,12 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         />
                         <YAxis yAxisId="left" unit="kWh" />
                         <YAxis yAxisId="right" orientation="right" unit="BGN" />
-                        <Brush />
+                        <Brush
+                            dataKey="datetimeKey"
+                            tickFormatter={(value) =>
+                                tickFormatter(value, timeInput)
+                            }
+                        />
                         <Tooltip />
                         <Legend />
                         {/* Adding a Bar for each metering point
