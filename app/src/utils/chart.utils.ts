@@ -42,7 +42,7 @@ const monthNames = [
  * @param value - value to transform
  * @param dateOptions - InputTime data
  */
-export const tickFormatter = (value: string, dateOptions?: InputTime) => {
+export const tickFormatter = (value: number, dateOptions?: InputTime) => {
     // Hourly data
     if (
         dateOptions?.day &&
@@ -50,13 +50,13 @@ export const tickFormatter = (value: string, dateOptions?: InputTime) => {
         dateOptions?.day !== "default" &&
         dateOptions?.month !== "default"
     )
-        return +value <= 11 ? `${value}am` : `${value}pm`;
+        return value <= 11 ? `${value}am` : `${value}pm`;
 
     // Daily data
     if (dateOptions?.month && dateOptions?.month !== "default") {
-        if (+value >= 10 && +value <= 20) return `${value}th`;
+        if (value >= 10 && value <= 20) return `${value}th`;
 
-        switch (value.slice(-1)) {
+        switch (value?.toString().slice(-1)) {
             case "1":
                 return `${value}st`;
             case "2":

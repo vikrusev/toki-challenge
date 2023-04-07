@@ -43,8 +43,8 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
         setIsLoading(true);
 
         const response = await fetch(fetchDataUrl);
-        const responseJson: ClientResponse[] = await response.json();
-        setCombinedData(responseJson);
+        const responseJson = await response.json();
+        setCombinedData(JSON.parse(responseJson.body));
 
         setIsLoading(false);
     };
