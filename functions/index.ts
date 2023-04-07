@@ -1,51 +1,41 @@
-import CloudStorageClient from "./business/CloudStorageClient";
-import getStorageOptions from "./config/getStorageOptions";
-import validationSchema from "./business/validators/userInput.validator";
-import evaluateInformation from "./business/evaluateInformation";
+import { ApiCallback } from "./utils/FunctionCallback";
+
+import getPriceUsageData from "./handlers/getPriceUsage.handler";
+import appErrorWrapper from "./utils/appErrorWrapper";
 
 /**
- * Retrieve data from usage/ and prices/ objects from TOKI's
- * Google Cloud Storage Bucket
- *
- * Client may provide
- *  - only YEAR
- *    - returns all 12 months of the YEAR w/ mean values of electricity price and metering point(s) usage
- *      - the mean for each month is calculated first based on hours, then on days
- *  - YEAR and MONTH
- *    - returns all days of the MONTH in YEAR w/ mean values of electricity price and metering point(s) usage
- *      - the mean for each day is calculated based on hours
- *  - YEAR, MONTH and DAY
- *    - returns all hours of a DAY in a MONTH in YEAR w/ actual values of the electricity price and metering point(s) usage
- * Providing METERING_POINT_ID is optional for all variants from above
+ * Find a proper handler to be called based on the request data
+ * @returns a function handler for business logic
  */
-const mainEntrypoint = async (req: any, res: any) => {
-    // check if user input is valid
-    const isUserInputValid = validationSchema.validate(req.query);
-    if (isUserInputValid.error) {
-        throw new Error(
-            `User Input is invalid. Error: ${isUserInputValid.error}`
-        );
+const retrieveHandler = (request: any) => {
+    // do something w/ request to define which handler should be used
+    // e.g. parse the body or query params
+    return getPriceUsageData;
+};
+
+/**
+ * Entrypoint of the Cloud Function
+ * The handler to be called is wrapped in an Application Error Handler
+ * Any caught exceptions are treated as Interal Server Errors
+ */
+const mainEntrypoint = async (request: any, response: any) => {
+    try {
+        // retrieve a proper handler
+        const handler = retrieveHandler(request);
+
+        // wrap the handler in Error Handler
+        const result = await appErrorWrapper(handler)(request);
+
+        // finally, generate a JSON response for the client based on the wrapper output
+        return result.generateResponseJSON(response);
+    } catch (error: any) {
+        // handle Internal Server Error
+        console.error(`Internal Server Error: ${JSON.stringify(error)}`);
+
+        return ApiCallback.error({
+            message: "Internal Server Error",
+        }).generateResponseJSON(response);
     }
-
-    // read options for Cloud Storage
-    const storageOptions = await getStorageOptions(
-        Boolean(process.env.CI_PROD)
-    );
-
-    // build a CloudStorageClient to work w/ requested data
-    const cloudStorageClient = new CloudStorageClient(storageOptions);
-
-    // get user requested data
-    const requestedData = await cloudStorageClient.getUserData(req.query);
-
-    // evaluate requested data
-    const clientData = evaluateInformation(requestedData, req.query);
-
-    // simply allow CORS from all origins
-    res.set("Access-Control-Allow-Origin", "*");
-
-    // send response back to client
-    res.send(clientData);
 };
 
 export { mainEntrypoint };
