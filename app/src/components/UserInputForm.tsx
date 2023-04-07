@@ -5,6 +5,7 @@ import { METERING_POINTIDS_REGEX, WHITESPACE_REGEX } from "../utils/regex";
 import Dropdown from "./Dropdown";
 
 interface IProps {
+    disabled: boolean;
     onSubmit: (formData: UserInput) => void;
 }
 /**
@@ -13,7 +14,7 @@ interface IProps {
  * Also, one input field of type text for listing Metering Point Ids
  * @param param0 - submit event from parent component
  */
-const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
+const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
     // values to be used for the 3 dropdowns
     const availableDates = {
         years: ["2022", "2023"],
@@ -42,6 +43,8 @@ const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
 
     const submitRequest = (event: any) => {
         event.preventDefault();
+
+        if (disabled) return;
 
         const { meteringPointIds } = formData;
 
@@ -98,7 +101,9 @@ const UserInputForm: React.FC<IProps> = ({ onSubmit }: IProps) => {
                     onChange={handleChange}
                 />
 
-                <button type="submit">Submit Request</button>
+                <button disabled={disabled} type="submit">
+                    Submit Request
+                </button>
             </form>
         </>
     );
