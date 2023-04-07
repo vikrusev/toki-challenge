@@ -1,19 +1,19 @@
 import { POINTID_REGEX } from "../config/constants";
 import {
-    ParsedData,
-    PricesData,
-    FlattenData,
-    UsageData,
-    FullFlattenData,
-    RawFileData,
+    DownloadedCloudFile,
+    Price,
+    Usage,
+    JsonConvertedData,
+    UnifiedPriceUsage,
+    AggregatedData,
 } from "../types/information.types";
 import { InputTime } from "../../common/dtos/UserInput.dto";
 import { ClientResponse } from "../../common/response.types";
 
-// type guard for PricesData[]
+// type guard for Price[]
 const isPricesDataArray = (
-    arr: ParsedData["parsedData"]
-): arr is PricesData[] => {
+    arr: JsonConvertedData["parsedData"]
+): arr is Price[] => {
     return arr.every((e) => "price" in e);
 };
 
@@ -37,14 +37,17 @@ const getGroupKey = (date: Date, { month, day }: InputTime) =>
  * Parse JsonL data and map to TypeScript objects
  * @returns an array w/ parsed and mapped to objects data
  */
-const parseFiles = (files: RawFileData[]): ParsedData[] => {
+const convertRawUsageAndPricesDataToJson = (
+    files: DownloadedCloudFile[]
+): JsonConvertedData[] => {
     // loop each given file
     return files.map(({ data, filename }) => {
         // parse lines and filter empty lines if any
         const lines = data.toString().split("\n");
         const parsedData = lines
             .map(
-                (line): ParsedData["parsedData"][0] => line && JSON.parse(line)
+                (line): JsonConvertedData["parsedData"][0] =>
+                    line && JSON.parse(line)
             )
             .filter(Boolean);
 
@@ -65,9 +68,9 @@ const parseFiles = (files: RawFileData[]): ParsedData[] => {
  *  - if month and day are given - group on Hourly basis
  */
 const groupData = (
-    data: FlattenData[],
+    data: UnifiedPriceUsage[],
     timeInput: InputTime
-): FullFlattenData[] => {
+): AggregatedData[] => {
     // use reduce to get an object w/ keys a group key
     // and value an object of datetime, array of electricity prices
     // and eventually arrays of the available metering points
@@ -94,7 +97,7 @@ const groupData = (
 
             return acc;
         },
-        {} as Record<string, FullFlattenData>
+        {} as Record<string, AggregatedData>
     );
 
     // finally, remove the keys and leave the values only
@@ -104,7 +107,7 @@ const groupData = (
 /**
  * Calculate average electricity price and metering points values for each Hour / Day / Month
  */
-const calculateAverageValues = (data: FullFlattenData[]): ClientResponse[] => {
+const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
     return data.map(
         ({ datetimeKey, datetime, electricityPrice, ...pointIdData }) => {
             const averageElectricityPrice = getArrayAverage(electricityPrice);
@@ -131,7 +134,9 @@ const calculateAverageValues = (data: FullFlattenData[]): ClientResponse[] => {
  * Keep only properties that are needed by the frontend layer
  * w/ proper names
  */
-const cleanData = (data: ParsedData[]): FlattenData[] => {
+const unifyPricesAndUsageData = (
+    data: JsonConvertedData[]
+): UnifiedPriceUsage[] => {
     return data.flatMap(({ filename, parsedData }) => {
         if (isPricesDataArray(parsedData)) {
             return parsedData.map((data) => ({
@@ -143,7 +148,7 @@ const cleanData = (data: ParsedData[]): FlattenData[] => {
         // we are sure that there is a match, because the non-isPricesData
         // files have pointId in the end of the filename
         const pointId = filename.match(POINTID_REGEX)![1];
-        return (parsedData as UsageData[]).map((data) => ({
+        return (parsedData as Usage[]).map((data) => ({
             datetime: data.timestamp,
             [pointId]: data.kwh,
         }));
@@ -164,14 +169,14 @@ const cleanData = (data: ParsedData[]): FlattenData[] => {
  * based on @param param1, ready to be used by the frontend layer
  */
 const evaluateRequestedData = (
-    files: RawFileData[],
+    files: DownloadedCloudFile[],
     timeInput: InputTime
 ): ClientResponse[] => {
     // parse raw prices and usage data
-    const parsedFiles = parseFiles(files);
+    const parsedFiles = convertRawUsageAndPricesDataToJson(files);
 
-    // make no difference between prices and usage data
-    const standardizedData = cleanData(parsedFiles);
+    // unify prices and usage data
+    const standardizedData = unifyPricesAndUsageData(parsedFiles);
 
     // group data by time
     const groupedEntries = groupData(standardizedData, timeInput);

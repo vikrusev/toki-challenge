@@ -1,7 +1,10 @@
+import {
+    AggregatedData,
+    UnifiedPriceUsage,
+} from "../functions/types/information.types";
+
 // clean data to be used directly on the frontend layer
-export interface ClientResponse {
-    datetimeKey: number;
-    datetime: number;
+export interface ClientResponse extends UnifiedPriceUsage {
     electricityPrice: number;
-    [key: string]: number;
+    datetimeKey: AggregatedData["datetimeKey"];
 }
