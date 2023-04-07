@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+    app:
+        image: react-app
+        build:
+            context: .
+            dockerfile: ./app/Dockerfile
+        restart: on-failure:5
+        expose:
+            - 3000
+        ports:
+            - 3000:3000
