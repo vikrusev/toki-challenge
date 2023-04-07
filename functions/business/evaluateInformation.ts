@@ -67,7 +67,7 @@ const convertRawUsageAndPricesDataToJson = (
  *  - if month is given, day is not - group on Daily basis
  *  - if month and day are given - group on Hourly basis
  */
-const groupData = (
+const groupByTimeInput = (
     data: UnifiedPriceUsage[],
     timeInput: InputTime
 ): AggregatedData[] => {
@@ -131,13 +131,13 @@ const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
 };
 
 /**
- * Keep only properties that are needed by the frontend layer
- * w/ proper names
+ * Prices and Usage data should have a "time" and "price" fields
  */
 const unifyPricesAndUsageData = (
-    data: JsonConvertedData[]
+    files: JsonConvertedData[]
 ): UnifiedPriceUsage[] => {
-    return data.flatMap(({ filename, parsedData }) => {
+    return files.flatMap(({ filename, parsedData }) => {
+        // the "price" field in price entries should be 'electricityPrice'
         if (isPricesDataArray(parsedData)) {
             return parsedData.map((data) => ({
                 datetime: data.timestamp,
@@ -156,32 +156,27 @@ const unifyPricesAndUsageData = (
 };
 
 /**
- * The function undergoes 4 stages
- *  - #1 Parses files data
- *  - #2 Cleans data to use only properties, required by the frontend
- *  - #3 Groups entries by datetime
- *      - can be on Hourly, Daily or Monthly basis
- *  - #4 Averages values of electricity price and consumptions
+ * Read and evalue downloaded cloud file information
  *
- * @param files - prices and eventually usage data files
- * @param param1 - times provided by the user input, year is not needed
- * @returns an array representation of Prices and Usage data
- * based on @param param1, ready to be used by the frontend layer
+ * @param files - downloaded prices and usage data files
+ * @param timeInput - times provided by the user input, year is not needed
+ * @returns an array w/ transformed cloud information to frontend-based structure
+ *  - Monthly, Daily or Hourly averages are calculated based on @param timeInput
  */
 const evaluateRequestedData = (
     files: DownloadedCloudFile[],
     timeInput: InputTime
 ): ClientResponse[] => {
-    // parse raw prices and usage data
+    // convert data to JS objects
     const parsedFiles = convertRawUsageAndPricesDataToJson(files);
 
-    // unify prices and usage data
+    // unify prices and usage objects
     const standardizedData = unifyPricesAndUsageData(parsedFiles);
 
-    // group data by time
-    const groupedEntries = groupData(standardizedData, timeInput);
+    // get simple objects of prices and usage w/ Monthly, Daily or Hourly values
+    const groupedEntries = groupByTimeInput(standardizedData, timeInput);
 
-    // calculate average values
+    // calculate average prices and usage values
     return calculateAverageValues(groupedEntries);
 };
 
