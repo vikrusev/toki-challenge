@@ -84,14 +84,11 @@ const groupByTimeInput = (
 
             // if the data entry is prices, we will have electricityPrice
             if (electricityPrice) {
-                acc[key].electricityPrice = acc[key].electricityPrice || [];
                 acc[key].electricityPrice.push(electricityPrice);
             }
 
             // otherwise loop metering point datas
             Object.entries(pointIdDatas).forEach(([pointId, values]) => {
-                acc[key][pointId] = acc[key][pointId] || [];
-                // @ts-ignore
                 acc[key][pointId].push(values);
             });
 
@@ -115,7 +112,7 @@ const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
             const averagedPointIdData = Object.entries(pointIdData).reduce(
                 (acc, [pointId, values]) => ({
                     ...acc,
-                    [pointId]: getArrayAverage(values as number[]),
+                    [pointId]: getArrayAverage(values),
                 }),
                 {} as Record<string, number>
             );
@@ -147,7 +144,7 @@ const unifyPricesAndUsageData = (
 
         // we are sure that there is a match, because the non-isPricesData
         // files have pointId in the end of the filename
-        const pointId = filename.match(POINTID_REGEX)![1];
+        const pointId = filename.match(POINTID_REGEX)?.[1] || "unknown";
         return (parsedData as Usage[]).map((data) => ({
             datetime: data.timestamp,
             [pointId]: data.kwh,

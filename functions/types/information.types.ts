@@ -32,9 +32,10 @@ export interface UnifiedPriceUsage {
 }
 
 // aggregated data w/ combined prices and usage datas
-export interface AggregatedData {
+export type AggregatedData = {
     datetimeKey: number;
     datetime: number;
     electricityPrice: number[];
-    [pointId: string]: number[] | number;
-}
+} & {
+    [pointId: string]: number[];
+};

@@ -6,6 +6,7 @@ import getPriceUsageData from "./handlers/getPriceUsage.handler";
 
 /**
  * Find a proper handler to be called based on the request data
+ * In our case, we have only one :)
  * @returns a function handler for business logic
  */
 const retrieveHandler = (request: Request) => {
