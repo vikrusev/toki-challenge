@@ -104,5 +104,5 @@ build
 # TernJS port file
 .tern-port
 
-# TOKI Google Cloud Storage Datalake
-functions/toki-take-home-774e713e21c1.json
+# Service Google Cloud Account Key
+functions/toki-challenge-service-account.json

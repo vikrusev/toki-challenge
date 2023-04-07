@@ -34,7 +34,9 @@ const getStorageOptions = async (
  */
 const getConfigurationFromSecretManager = async (): Promise<StorageOptions> => {
     // create a client to access the Secret Manager service
-    const client = new SecretManagerServiceClient();
+    const client = new SecretManagerServiceClient({
+        keyFilename: "toki-challenge-service-account.json",
+    });
 
     // define the name of the secret
     const secretFullPath = `projects/toki-challenge-382218/secrets/${SECRET_NAME}/versions/latest`;
