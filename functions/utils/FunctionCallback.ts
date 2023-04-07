@@ -1,3 +1,5 @@
+import { Response } from "express";
+
 class ApiCallback {
     public static success = (json: object): ApiCallback => {
         return new ApiCallback(200, json);
@@ -19,7 +21,7 @@ class ApiCallback {
         this.body = body;
     }
 
-    public generateResponseJSON(response: any) {
+    public generateResponseJSON(response: Response) {
         response.status(this.statusCode);
         response.send({
             headers: {

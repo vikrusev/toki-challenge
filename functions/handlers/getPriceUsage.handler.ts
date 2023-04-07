@@ -19,9 +19,9 @@ import { BadRequestException } from "../utils/exceptions";
  *
  * Providing METERING_POINT_ID is optional for all variants from above
  */
-const getPriceUsageData = async ({ query: queryParams }: any) => {
+const getPriceUsageData = async ({ query: userInput }: any) => {
     // check if user input is valid
-    const userInputValidationResult = validationSchema.validate(queryParams);
+    const userInputValidationResult = validationSchema.validate(userInput);
     if (userInputValidationResult.error) {
         throw new BadRequestException(
             `User Input is invalid. Error: ${userInputValidationResult.error}`
@@ -37,10 +37,10 @@ const getPriceUsageData = async ({ query: queryParams }: any) => {
     const cloudStorageClient = new CloudStorageClient(storageOptions);
 
     // get user requested data
-    const requestedData = await cloudStorageClient.getUserData(queryParams);
+    const requestedData = await cloudStorageClient.getUserData(userInput);
 
     // evaluate requested data
-    const clientData = evaluateInformation(requestedData, queryParams);
+    const clientData = evaluateInformation(requestedData, userInput);
 
     // send final information to client
     return clientData;

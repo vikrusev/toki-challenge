@@ -1,5 +1,8 @@
+import { Request } from "express";
 import { ApiCallback } from "../utils/FunctionCallback";
 import { ApplicationError } from "./exceptions";
+
+type ApiHandler = (request: Request) => Promise<object>;
 
 /**
  * Wraps the @param handler in try catch
@@ -7,10 +10,8 @@ import { ApplicationError } from "./exceptions";
  * @returns {Promise<ApiCallback>} the result of the execution of @param handler
  *  - it can also be an Application Error or Internal Server Error
  */
-const appErrorWrapper = (
-    handler: (request: any, response?: any) => Promise<object>
-) => {
-    return async (request: any, response?: any): Promise<ApiCallback> => {
+const appErrorWrapper = (handler: ApiHandler) => {
+    return async (request: Request): Promise<ApiCallback> => {
         try {
             const handlerResult = await handler(request);
             return ApiCallback.success(handlerResult);
