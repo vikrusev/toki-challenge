@@ -34,7 +34,16 @@ const monthNames = [
     "DEC",
 ];
 
+/**
+ * Basic tick formatter based on the InputTime
+ * Transforms @param value to month names, if 'month' and 'day' are not given
+ * Transforms @param value to end in 'st', 'nd', 'rd', 'th' if only 'day' is not given
+ * Transforms @param value to end in 'am' or 'pm' if `month` and `day` are given
+ * @param value - value to transform
+ * @param dateOptions - InputTime data
+ */
 export const tickFormatter = (value: string, dateOptions?: InputTime) => {
+    // Hourly data
     if (
         dateOptions?.day &&
         dateOptions?.month &&
@@ -43,6 +52,7 @@ export const tickFormatter = (value: string, dateOptions?: InputTime) => {
     )
         return +value <= 11 ? `${value}am` : `${value}pm`;
 
+    // Daily data
     if (dateOptions?.month && dateOptions?.month !== "default") {
         if (+value >= 10 && +value <= 20) return `${value}th`;
 
@@ -58,14 +68,24 @@ export const tickFormatter = (value: string, dateOptions?: InputTime) => {
         }
     }
 
+    // Monthly data
     return monthNames[+value - 1];
 };
 
+/**
+ * Creates an array w/ 2 character digits w/ trailing zero, starting from '01'
+ * @param untilNumber
+ * @returns an array of string
+ */
 export const createArray = (untilNumber: number) =>
     Array.from({ length: untilNumber }, (_, i) =>
         String(i + 1).padStart(2, "0")
     );
 
+/**
+ * Builds a URL to fetch user data from
+ * @param param0 - different query arguments - dates and metering point ids
+ */
 export const buildUrl = ({ dateOptions, meteringPointIds }: UrlBuildData) => {
     let url = `http://localhost:8080/?year=${dateOptions.year}`;
 
