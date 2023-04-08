@@ -82,88 +82,84 @@ const UserInputForm: React.FC<IProps> = ({
     };
 
     return (
-        <>
-            <form onSubmit={submitRequest}>
-                <p>Please select time basis:</p>
+        <div>
+            <p>Please select time basis:</p>
 
-                {timeBasisOptions.map((basis, index) => (
-                    <div key={index.toString()}>
-                        <label htmlFor={basis}>{basis}</label>
-                        <input
-                            type="radio"
-                            id={basis}
-                            name="time-basis"
-                            value={basis}
-                            checked={selectedTimeBasis === basis}
-                            onChange={(event) => {
-                                setSelectedTimeBasis(
-                                    event.target.value as TimeBasis
-                                );
-                            }}
-                        />
-                    </div>
-                ))}
-
-                {selectedTimeBasis === "monthly" && (
-                    <DatePicker
-                        selected={selectedDate}
-                        onChange={handleSelectedDateChange}
-                        dateFormat="yyyy"
-                        placeholderText="YYYY"
-                        openToDate={new Date("2022/04/01")}
-                        showYearPicker
-                        todayButton="This Year"
-                        maxDate={new Date()}
-                        inline
+            {timeBasisOptions.map((basis, index) => (
+                <div key={index.toString()}>
+                    <label htmlFor={basis}>{basis}</label>
+                    <input
+                        type="radio"
+                        id={basis}
+                        name="time-basis"
+                        value={basis}
+                        checked={selectedTimeBasis === basis}
+                        onChange={(event) => {
+                            setSelectedTimeBasis(
+                                event.target.value as TimeBasis
+                            );
+                        }}
                     />
-                )}
+                </div>
+            ))}
 
-                {selectedTimeBasis === "daily" && (
-                    <DatePicker
-                        selected={selectedDate}
-                        onChange={handleSelectedDateChange}
-                        dateFormat="MMM-yy"
-                        placeholderText="MMM-YY"
-                        showMonthYearPicker
-                        openToDate={new Date("2022/04/01")}
-                        todayButton="This Month"
-                        maxDate={new Date()}
-                        inline
-                    />
-                )}
-
-                {selectedTimeBasis === "hourly" && (
-                    <DatePicker
-                        selected={selectedDate}
-                        onChange={handleSelectedDateChange}
-                        dateFormat="dd-MMM-yy"
-                        placeholderText="DD-MM-YY"
-                        openToDate={new Date("2022/04/01")}
-                        todayButton="Today"
-                        maxDate={new Date()}
-                        showMonthDropdown
-                        useShortMonthInDropdown
-                        showYearDropdown
-                        scrollableYearDropdown
-                        inline
-                    />
-                )}
-
-                <label htmlFor="meteringPoints">Metering Point Ids:</label>
-                <input
-                    id="meteringPoints"
-                    type="text"
-                    name="meteringPointIds"
-                    onChange={(event) =>
-                        setMeteringPointIds(event.target.value)
-                    }
+            {selectedTimeBasis === "monthly" && (
+                <DatePicker
+                    selected={selectedDate}
+                    onChange={handleSelectedDateChange}
+                    dateFormat="yyyy"
+                    placeholderText="YYYY"
+                    openToDate={new Date("2022/04/01")}
+                    showYearPicker
+                    todayButton="This Year"
+                    maxDate={new Date()}
+                    inline
                 />
+            )}
 
-                <button disabled={disabled} type="submit">
-                    Submit Request
-                </button>
-            </form>
-        </>
+            {selectedTimeBasis === "daily" && (
+                <DatePicker
+                    selected={selectedDate}
+                    onChange={handleSelectedDateChange}
+                    dateFormat="MMM-yy"
+                    placeholderText="MMM-YY"
+                    showMonthYearPicker
+                    openToDate={new Date("2022/04/01")}
+                    todayButton="This Month"
+                    maxDate={new Date()}
+                    inline
+                />
+            )}
+
+            {selectedTimeBasis === "hourly" && (
+                <DatePicker
+                    selected={selectedDate}
+                    onChange={handleSelectedDateChange}
+                    dateFormat="dd-MMM-yy"
+                    placeholderText="DD-MM-YY"
+                    openToDate={new Date("2022/04/01")}
+                    todayButton="Today"
+                    maxDate={new Date()}
+                    showMonthDropdown
+                    useShortMonthInDropdown
+                    showYearDropdown
+                    scrollableYearDropdown
+                    inline
+                />
+            )}
+
+            <label htmlFor="meteringPoints">Metering Point Ids:</label>
+            <input
+                id="meteringPoints"
+                type="text"
+                name="meteringPointIds"
+                onChange={(event) => setMeteringPointIds(event.target.value)}
+            />
+
+            <button disabled={disabled} onClick={submitRequest}>
+                Submit Request
+            </button>
+        </div>
     );
 };
 
