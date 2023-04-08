@@ -2,7 +2,7 @@ import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
 
 // sequentially pickable colors for Bars in a BarChart
 export const chartDataColors = [
-    "#eeb8b8",
+    "#db8c8c",
     "#c5dad1",
     "#aeddef",
     "#c9cbe0",

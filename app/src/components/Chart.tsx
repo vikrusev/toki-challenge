@@ -150,11 +150,20 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                                     tickFormatter(value, timeBasis)
                                 }
                             />
-                            <YAxis yAxisId="left" unit="kWh" />
+                            <YAxis
+                                yAxisId="left"
+                                unit="kWh"
+                                stroke={
+                                    meteringPointIds.length
+                                        ? chartDataColors[0]
+                                        : "#000"
+                                }
+                            />
                             <YAxis
                                 yAxisId="right"
                                 orientation="right"
                                 unit="BGN"
+                                stroke="#0000FF"
                             />
                             <Brush
                                 dataKey="datetimeKey"
