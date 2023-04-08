@@ -20,9 +20,11 @@ type TimeBasis = "monthly" | "daily" | "hourly";
  */
 const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
     const [selectedDate, setSelectedDate] = useState<Date>();
-    const [selectedTimeBasis, setSelectedTimeBasis] = useState<TimeBasis>();
 
     const timeBasisOptions: TimeBasis[] = ["monthly", "daily", "hourly"];
+    const [selectedTimeBasis, setSelectedTimeBasis] = useState<TimeBasis>(
+        timeBasisOptions[0]
+    );
 
     // main properties
     const [formData, setFormData] = useState<UserInput>({
@@ -87,6 +89,7 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
                             id={basis}
                             name="time-basis"
                             value={basis}
+                            checked={selectedTimeBasis === basis}
                             onChange={(event) => {
                                 setSelectedTimeBasis(
                                     event.target.value as TimeBasis
