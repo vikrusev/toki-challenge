@@ -19,38 +19,43 @@ type TimeBasis = "monthly" | "daily" | "hourly";
  * @param param0 - submit event from parent component
  */
 const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
-    const [selectedDate, setSelectedDate] = useState<Date>();
-
+    // specifies which datepicker to show
     const timeBasisOptions: TimeBasis[] = ["monthly", "daily", "hourly"];
+
+    // data to be submitted from the form
     const [selectedTimeBasis, setSelectedTimeBasis] = useState<TimeBasis>(
         timeBasisOptions[0]
     );
 
-    // main properties
-    const [formData, setFormData] = useState<UserInput>({
-        year: "2022",
-        month: "1",
-        day: "1",
-        meteringPointIds: "",
-    });
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+    const [meteringPointIds, setMeteringPointIds] = useState<string>("");
 
     // if submit to parent should be executed
     const [shouldExecuteSubmit, setShouldExecuteSubmit] =
         useState<boolean>(false);
 
     useEffect(() => {
+        // if the submit button is clicked
         if (shouldExecuteSubmit) {
             setShouldExecuteSubmit(false);
-            onSubmit(formData);
+
+            // submit data to prent
+            onSubmit({
+                year: selectedDate.getFullYear().toString(),
+                month: (selectedDate.getMonth() + 1).toString(),
+                day: selectedDate.getDate().toString(),
+                meteringPointIds: meteringPointIds?.replace(
+                    WHITESPACE_REGEX,
+                    ""
+                ),
+            });
         }
-    }, [onSubmit, formData, shouldExecuteSubmit]);
+    }, [onSubmit, selectedDate, shouldExecuteSubmit, meteringPointIds]);
 
     const submitRequest = (event: any) => {
         event.preventDefault();
 
         if (disabled) return;
-
-        const { meteringPointIds } = formData;
 
         // basic regex check if the metering points are comma seperated numbers
         if (
@@ -58,15 +63,10 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
             !METERING_POINTIDS_REGEX.test(meteringPointIds)
         ) {
             alert(
-                `Input field for Metering Point Ids must contain comma seperated numbers. Current: ${formData.meteringPointIds}`
+                `Input field for Metering Point Ids must contain comma seperated numbers. Current: ${meteringPointIds}`
             );
             return;
         }
-
-        formData.meteringPointIds = meteringPointIds?.replace(
-            WHITESPACE_REGEX,
-            ""
-        );
 
         setShouldExecuteSubmit(true);
     };
@@ -146,8 +146,9 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
                     id="meteringPoints"
                     type="text"
                     name="meteringPointIds"
-                    // @ts-ignore
-                    onChange={handleChange}
+                    onChange={(event) =>
+                        setMeteringPointIds(event.target.value)
+                    }
                 />
 
                 <button disabled={disabled} type="submit">
