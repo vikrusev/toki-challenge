@@ -41,7 +41,7 @@ const UserInputForm: React.FC<IProps> = ({
 
             // submit data to prent
             onSubmit({
-                date: selectedDate,
+                datetime: selectedDate.getTime(),
                 timeBasis: selectedTimeBasis,
                 meteringPointIds: meteringPointIds?.replace(
                     WHITESPACE_REGEX,

@@ -1,10 +1,4 @@
-import { TimeBasis } from "../../../common/dtos/UserInput.dto";
-
-interface UrlBuildData {
-    date: Date;
-    timeBasis: TimeBasis;
-    meteringPointIds: string;
-}
+import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
 
 // sequentially pickable colors for Bars in a BarChart
 export const chartDataColors = [
@@ -73,22 +67,13 @@ export const tickFormatter = (value: number, timeBasis: TimeBasis) => {
  * @param param0 - different query arguments - dates and metering point ids
  */
 export const buildFetchUrl = ({
-    date,
+    datetime,
     timeBasis,
     meteringPointIds,
-}: UrlBuildData) => {
-    let url = `http://localhost:8080/?year=${date.getFullYear()}`;
+}: UserInput) => {
+    let url = `http://localhost:8080/?datetime=${datetime}&timeBasis=${timeBasis}`;
 
-    if (timeBasis === "daily") {
-        url += `&month=${date.getMonth() + 1}`;
-    }
-
-    if (timeBasis === "hourly") {
-        url += `&month=${date.getMonth() + 1}&day=${date.getDate()}`;
-    }
-
-    if (meteringPointIds?.split(","))
-        url += `&meteringPointIds=${meteringPointIds}`;
+    if (meteringPointIds) url += `&meteringPointIds=${meteringPointIds}`;
 
     return url;
 };

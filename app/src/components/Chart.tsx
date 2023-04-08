@@ -82,13 +82,13 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     }, [fetchDataUrl]);
 
     const submitUserInput = ({
-        date,
+        datetime,
         timeBasis,
         meteringPointIds,
     }: UserInput) => {
         // build URL to fetch desired data from
         const fetchDataUrl = buildFetchUrl({
-            date,
+            datetime,
             timeBasis,
             meteringPointIds,
         });
