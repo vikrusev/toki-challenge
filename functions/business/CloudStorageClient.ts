@@ -5,7 +5,7 @@ import {
     FILEPATH_PREFIXES,
     POINTID_REGEX,
 } from "../config/constants";
-import { InputTime, UserInput } from "../../common/dtos/UserInput.dto";
+import { TimeBasis, UserInput } from "../../common/dtos/UserInput.dto";
 import { addPadding, removePadding } from "./helpers/datePrefix.helper";
 import { DownloadedCloudFile } from "../types/information.types";
 
@@ -36,12 +36,21 @@ class CloudStorageClient {
      * @returns an array w/ mapped filenames w/ their data
      */
     getUserData = async ({
+        datetime,
+        timeBasis,
         meteringPointIds,
-        ...times
     }: UserInput): Promise<DownloadedCloudFile[]> => {
         // prepare prefixes
-        const timePrefixPrices = this.timePaddedPrefixPrices(times);
-        const timePrefixUsage = this.timePaddedPrefixUsage(times);
+        const timePrefixPrices = this.timePaddedPrefix(
+            datetime,
+            timeBasis,
+            "prices"
+        );
+        const timePrefixUsage = this.timePaddedPrefix(
+            datetime,
+            timeBasis,
+            "usage"
+        );
 
         // get all available files in the Cloud Storage
         const [availableCloudFiles] = await this.bucket.getFiles();
@@ -77,22 +86,29 @@ class CloudStorageClient {
      * Generate filepath prefix w/ times for prices
      * @param {Time} time - the requested by the client time of data - year, month and day
      */
-    private timePaddedPrefixPrices = (time: InputTime): string => {
-        let prefix = `${FILEPATH_PREFIXES.prices}/${time.year}`;
-        if (time.month) prefix += `/${addPadding(time.month)}`;
-        if (time.day) prefix += `/${addPadding(time.day)}`;
+    private timePaddedPrefix = (
+        datetime: string | number,
+        timeBasis: TimeBasis,
+        type: "prices" | "usage"
+    ): string => {
+        const date = new Date(+datetime);
 
-        return prefix;
-    };
+        let prefix = `${FILEPATH_PREFIXES[type]}/${date.getFullYear()}`;
 
-    /**
-     * Generate filepath prefix w/ times for usage
-     * @param {Time} time - the requested by the client time of data - year, month and day
-     */
-    private timePaddedPrefixUsage = (time: InputTime): string => {
-        let prefix = `${FILEPATH_PREFIXES.usage}/${time.year}`;
-        if (time.month) prefix += `/${addPadding(time.month)}`;
-        if (time.day) prefix += `/${removePadding(time.day)}`;
+        const [month, day] = [date.getMonth() + 1, date.getDate()];
+
+        if (timeBasis === "daily") prefix += `/${addPadding(month)}`;
+
+        if (timeBasis === "hourly") {
+            prefix += `/${addPadding(month)}`;
+
+            if (type === "prices") {
+                prefix += `/${addPadding(day)}`;
+            }
+            if (type === "usage") {
+                prefix += `/${removePadding(day)}`;
+            }
+        }
 
         return prefix;
     };

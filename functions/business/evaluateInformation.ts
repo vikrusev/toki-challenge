@@ -7,7 +7,7 @@ import {
     UnifiedPriceUsage,
     AggregatedData,
 } from "../types/information.types";
-import { InputTime } from "../../common/dtos/UserInput.dto";
+import { TimeBasis, UserInput } from "../../common/dtos/UserInput.dto";
 import { ClientResponse } from "../../common/response.types";
 
 // type guard for Price[]
@@ -26,12 +26,17 @@ const getArrayAverage = (values: number[]) =>
     );
 
 // get UTC representation of key to group data on
-const getGroupKey = (date: Date, { month, day }: InputTime) =>
-    day && month
-        ? `${date.getUTCHours()}`
-        : month
-        ? `${date.getUTCDate()}`
-        : `${date.getUTCMonth() + 1}`;
+const getGroupKey = (date: Date, timeBasis: TimeBasis) => {
+    if (timeBasis === "monthly") {
+        return date.getUTCMonth() + 1;
+    }
+
+    if (timeBasis === "daily") {
+        return date.getUTCDate();
+    }
+
+    return date.getUTCHours();
+};
 
 /**
  * Parse JsonL data and map to TypeScript objects
@@ -69,7 +74,7 @@ const convertRawUsageAndPricesDataToJson = (
  */
 const groupByTimeInput = (
     data: UnifiedPriceUsage[],
-    timeInput: InputTime
+    timeBasis: TimeBasis
 ): AggregatedData[] => {
     // use reduce to get an object w/ keys a group key
     // and value an object of datetime, array of electricity prices
@@ -77,7 +82,7 @@ const groupByTimeInput = (
     const result = data.reduce(
         (acc, { electricityPrice, datetime, ...pointIdDatas }) => {
             const date = new Date(datetime);
-            const key = getGroupKey(date, timeInput);
+            const key = getGroupKey(date, timeBasis);
 
             // prepare initial datetime field, which is a must-have
             acc[key] = acc[key] || {
@@ -167,7 +172,7 @@ const unifyPricesAndUsageData = (
  */
 const evaluateRequestedData = (
     files: DownloadedCloudFile[],
-    timeInput: InputTime
+    { datetime, timeBasis }: UserInput
 ): ClientResponse[] => {
     // convert data to JS objects
     const parsedFiles = convertRawUsageAndPricesDataToJson(files);
@@ -176,7 +181,7 @@ const evaluateRequestedData = (
     const standardizedData = unifyPricesAndUsageData(parsedFiles);
 
     // get simple objects of prices and usage w/ Monthly, Daily or Hourly values
-    const groupedEntries = groupByTimeInput(standardizedData, timeInput);
+    const groupedEntries = groupByTimeInput(standardizedData, timeBasis);
 
     // calculate average prices and usage values
     return calculateAverageValues(groupedEntries);
