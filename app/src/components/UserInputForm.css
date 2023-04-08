@@ -46,3 +46,8 @@
     box-shadow: none;
     transform: translateY(2px);
 }
+
+#user-input-form-component .metering-point-list {
+    height: 375px;
+    overflow: auto;
+}

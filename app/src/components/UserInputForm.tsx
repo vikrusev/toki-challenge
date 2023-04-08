@@ -153,18 +153,20 @@ const UserInputForm: React.FC<IProps> = ({
                 <div className="metering-points-input">
                     <h3>Metering Point Ids</h3>
 
-                    {["1234", "5678"].map((pointId) => (
-                        <div key={pointId}>
-                            <input
-                                type="checkbox"
-                                id={pointId}
-                                name={pointId}
-                                value={pointId}
-                                onChange={handleMeteringPointCheckboxChange}
-                            />
-                            <label htmlFor={pointId}>{pointId}</label>
-                        </div>
-                    ))}
+                    <div className="metering-point-list">
+                        {["1234", "5678"].map((pointId) => (
+                            <div key={pointId}>
+                                <input
+                                    type="checkbox"
+                                    id={pointId}
+                                    name={pointId}
+                                    value={pointId}
+                                    onChange={handleMeteringPointCheckboxChange}
+                                />
+                                <label htmlFor={pointId}>{pointId}</label>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 
