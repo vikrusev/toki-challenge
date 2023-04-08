@@ -1,8 +1,7 @@
-export type InputTime = Pick<UserInput, "year" | "month" | "day">;
+export type TimeBasis = "monthly" | "daily" | "hourly";
 
 export interface UserInput {
-    year: string;
-    month: string;
-    day: string;
+    date: Date;
+    timeBasis: TimeBasis;
     meteringPointIds: string; // a comma seperated list of numbers
 }
