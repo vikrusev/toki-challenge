@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
-import { UserInput } from "../../../common/dtos/UserInput.dto";
+import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
 import { METERING_POINTIDS_REGEX, WHITESPACE_REGEX } from "../utils/regex";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface IProps {
+    timeBasisOptions: TimeBasis[];
     disabled: boolean;
     onSubmit: (formData: UserInput) => void;
 }
-
-type TimeBasis = "monthly" | "daily" | "hourly";
 
 /**
  * The UserInputForm includes 3 dropdowns for year, month and day respectively
@@ -18,10 +17,11 @@ type TimeBasis = "monthly" | "daily" | "hourly";
  * Also, one input field of type text for listing Metering Point Ids
  * @param param0 - submit event from parent component
  */
-const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
-    // specifies which datepicker to show
-    const timeBasisOptions: TimeBasis[] = ["monthly", "daily", "hourly"];
-
+const UserInputForm: React.FC<IProps> = ({
+    timeBasisOptions,
+    disabled,
+    onSubmit,
+}: IProps) => {
     // data to be submitted from the form
     const [selectedTimeBasis, setSelectedTimeBasis] = useState<TimeBasis>(
         timeBasisOptions[0]
@@ -41,16 +41,21 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
 
             // submit data to prent
             onSubmit({
-                year: selectedDate.getFullYear().toString(),
-                month: (selectedDate.getMonth() + 1).toString(),
-                day: selectedDate.getDate().toString(),
+                date: selectedDate,
+                timeBasis: selectedTimeBasis,
                 meteringPointIds: meteringPointIds?.replace(
                     WHITESPACE_REGEX,
                     ""
                 ),
             });
         }
-    }, [onSubmit, selectedDate, shouldExecuteSubmit, meteringPointIds]);
+    }, [
+        onSubmit,
+        selectedDate,
+        selectedTimeBasis,
+        shouldExecuteSubmit,
+        meteringPointIds,
+    ]);
 
     const submitRequest = (event: any) => {
         event.preventDefault();

@@ -1,8 +1,9 @@
-import { InputTime } from "../../../common/dtos/UserInput.dto";
+import { TimeBasis } from "../../../common/dtos/UserInput.dto";
 
 interface UrlBuildData {
-    dateOptions: InputTime;
-    meteringPointIds: string[];
+    date: Date;
+    timeBasis: TimeBasis;
+    meteringPointIds: string;
 }
 
 // sequentially pickable colors for Bars in a BarChart
@@ -42,18 +43,13 @@ const monthNames = [
  * @param value - value to transform
  * @param dateOptions - InputTime data
  */
-export const tickFormatter = (value: number, dateOptions?: InputTime) => {
+export const tickFormatter = (value: number, timeBasis: TimeBasis) => {
     // Hourly data
-    if (
-        dateOptions?.day &&
-        dateOptions?.month &&
-        dateOptions?.day !== "default" &&
-        dateOptions?.month !== "default"
-    )
+    if (timeBasis === "hourly")
         return value <= 11 ? `${value}am` : `${value}pm`;
 
     // Daily data
-    if (dateOptions?.month && dateOptions?.month !== "default") {
+    if (timeBasis === "daily") {
         if (value >= 10 && value <= 20) return `${value}th`;
 
         switch (value?.toString().slice(-1)) {
@@ -76,16 +72,23 @@ export const tickFormatter = (value: number, dateOptions?: InputTime) => {
  * Builds a URL to fetch user data from
  * @param param0 - different query arguments - dates and metering point ids
  */
-export const buildUrl = ({ dateOptions, meteringPointIds }: UrlBuildData) => {
-    let url = `http://localhost:8080/?year=${dateOptions.year}`;
+export const buildFetchUrl = ({
+    date,
+    timeBasis,
+    meteringPointIds,
+}: UrlBuildData) => {
+    let url = `http://localhost:8080/?year=${date.getFullYear()}`;
 
-    if (meteringPointIds.length && meteringPointIds.filter(Boolean).length)
-        url += `&meteringPointIds=${meteringPointIds.join(",")}`;
-
-    if (dateOptions.month !== "default") {
-        url += `&month=${dateOptions.month}`;
-        if (dateOptions.day !== "default") url += `&day=${dateOptions.day}`;
+    if (timeBasis === "daily") {
+        url += `&month=${date.getMonth() + 1}`;
     }
+
+    if (timeBasis === "hourly") {
+        url += `&month=${date.getMonth() + 1}&day=${date.getDate()}`;
+    }
+
+    if (meteringPointIds?.split(","))
+        url += `&meteringPointIds=${meteringPointIds}`;
 
     return url;
 };

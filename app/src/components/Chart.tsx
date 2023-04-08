@@ -16,8 +16,12 @@ import {
 } from "recharts";
 
 import { ClientResponse } from "../../../common/response.types";
-import { InputTime, UserInput } from "../../../common/dtos/UserInput.dto";
-import { buildUrl, chartDataColors, tickFormatter } from "../utils/chart.utils";
+import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
+import {
+    buildFetchUrl,
+    chartDataColors,
+    tickFormatter,
+} from "../utils/chart.utils";
 import UserInputForm from "./UserInputForm";
 
 interface IProps {
@@ -25,16 +29,20 @@ interface IProps {
 }
 
 const Chart: React.FC<IProps> = ({ title }: IProps) => {
-    // data for charts
-    const [combinedData, setCombinedData] = useState<ClientResponse[]>([]);
+    // specifies which datepicker to show
+    const timeBasisOptions: TimeBasis[] = ["monthly", "daily", "hourly"];
 
     // user input data
-    const [timeInput, setTimeInput] = useState<InputTime>();
+    const [timeBasis, setTimeBasis] = useState<TimeBasis>(timeBasisOptions[0]);
     const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
+
+    // data for charts
+    const [combinedData, setCombinedData] = useState<ClientResponse[]>([]);
 
     // url to fetch data from
     const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
 
+    // always know if a request is in progress
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     /**
@@ -49,13 +57,14 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
             if (response.status > 400) {
                 throw new Error(response.statusText);
             }
+
             const responseJson = await response.json();
             setCombinedData(JSON.parse(responseJson.body));
         } catch (err) {
+            // show error using Toast
             toast.error((err as Error).message, {
                 position: "top-center",
                 autoClose: 6000,
-                // hideProgressBar: true,
                 closeOnClick: true,
                 pauseOnHover: true,
                 draggable: true,
@@ -73,20 +82,20 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     }, [fetchDataUrl]);
 
     const submitUserInput = ({
+        date,
+        timeBasis,
         meteringPointIds,
-        ...dateOptions
     }: UserInput) => {
-        const meteringPointIdsArray = meteringPointIds?.split(",") || [];
-
         // build URL to fetch desired data from
-        const fetchDataUrl = buildUrl({
-            dateOptions,
-            meteringPointIds: meteringPointIdsArray,
+        const fetchDataUrl = buildFetchUrl({
+            date,
+            timeBasis,
+            meteringPointIds,
         });
 
         setFetchDataUrl(fetchDataUrl);
-        setTimeInput(dateOptions);
-        setMeteringPointIds(meteringPointIdsArray);
+        setTimeBasis(timeBasis);
+        setMeteringPointIds(meteringPointIds.split(","));
     };
 
     const clipLoaderCss: CSSProperties = {
@@ -112,7 +121,11 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                 cssOverride={clipLoaderCss}
             />
 
-            <UserInputForm disabled={isLoading} onSubmit={submitUserInput} />
+            <UserInputForm
+                timeBasisOptions={timeBasisOptions}
+                disabled={isLoading}
+                onSubmit={submitUserInput}
+            />
 
             {!combinedData?.length ? (
                 <h2>No data available</h2>
@@ -134,7 +147,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         <XAxis
                             dataKey="datetimeKey"
                             tickFormatter={(value) =>
-                                tickFormatter(value, timeInput)
+                                tickFormatter(value, timeBasis)
                             }
                         />
                         <YAxis yAxisId="left" unit="kWh" />
@@ -142,7 +155,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         <Brush
                             dataKey="datetimeKey"
                             tickFormatter={(value) =>
-                                tickFormatter(value, timeInput)
+                                tickFormatter(value, timeBasis)
                             }
                         />
                         <Tooltip />
