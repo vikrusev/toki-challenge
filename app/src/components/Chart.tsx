@@ -92,19 +92,20 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     const clipLoaderCss: CSSProperties = {
         display: "block",
         margin: "0 auto",
-        position: "absolute",
+        position: "fixed",
         top: "45%",
         left: "45%",
         borderWidth: "5px",
         borderColor: "#ff8600 #ffc600 transparent",
         zIndex: "999",
+        transform: "translate(-50%,-50%)",
     };
 
     return (
-        <div className="chart-component">
+        <div id="chart-component">
             <h1>{title}</h1>
 
-            <div className="user-input">
+            <div id="user-input">
                 <UserInputForm
                     timeBasisOptions={timeBasisOptions}
                     disabled={isLoading}
@@ -112,17 +113,22 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                 />
             </div>
 
-            <div className="chart-container">
+            <div id="chart-container">
                 <ClipLoader
+                    id="clip-loader"
                     size={150}
                     loading={isLoading}
                     cssOverride={clipLoaderCss}
                 />
 
                 {!combinedData?.length ? (
-                    <div className="no-data">
-                        <h2>No electricity price and usage data available</h2>
-                    </div>
+                    !isLoading && (
+                        <div className="no-data">
+                            <h2>
+                                No electricity price and usage data available
+                            </h2>
+                        </div>
+                    )
                 ) : (
                     <ResponsiveContainer width="100%" height={700}>
                         <ComposedChart

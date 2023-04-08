@@ -2,6 +2,10 @@ h1 {
     text-align: center;
 }
 
+#user-input {
+    margin-bottom: 20px;
+}
+
 .no-data {
     display: flex;
     align-items: center;
