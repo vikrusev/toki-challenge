@@ -114,6 +114,7 @@ const UserInputForm: React.FC<IProps> = ({
                         showYearPicker
                         todayButton="This Year"
                         maxDate={new Date()}
+                        inline
                     />
                 )}
 
@@ -127,6 +128,7 @@ const UserInputForm: React.FC<IProps> = ({
                         openToDate={new Date("2022/04/01")}
                         todayButton="This Month"
                         maxDate={new Date()}
+                        inline
                     />
                 )}
 
@@ -143,6 +145,7 @@ const UserInputForm: React.FC<IProps> = ({
                         useShortMonthInDropdown
                         showYearDropdown
                         scrollableYearDropdown
+                        inline
                     />
                 )}
 
