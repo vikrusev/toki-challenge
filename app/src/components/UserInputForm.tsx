@@ -72,7 +72,7 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
     };
 
     // general handle of input form change
-    const handleChange = (date: Date) => {
+    const handleSelectedDateChange = (date: Date) => {
         setSelectedDate(date);
     };
 
@@ -102,7 +102,7 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
                 {selectedTimeBasis === "monthly" && (
                     <DatePicker
                         selected={selectedDate}
-                        onChange={handleChange}
+                        onChange={handleSelectedDateChange}
                         dateFormat="yyyy"
                         placeholderText="YYYY"
                         openToDate={new Date("2022/04/01")}
@@ -115,7 +115,7 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
                 {selectedTimeBasis === "daily" && (
                     <DatePicker
                         selected={selectedDate}
-                        onChange={handleChange}
+                        onChange={handleSelectedDateChange}
                         dateFormat="MMM-yy"
                         placeholderText="MMM-YY"
                         showMonthYearPicker
@@ -128,7 +128,7 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
                 {selectedTimeBasis === "hourly" && (
                     <DatePicker
                         selected={selectedDate}
-                        onChange={handleChange}
+                        onChange={handleSelectedDateChange}
                         dateFormat="dd-MMM-yy"
                         placeholderText="DD-MM-YY"
                         openToDate={new Date("2022/04/01")}
