@@ -73,16 +73,6 @@ export const tickFormatter = (value: number, dateOptions?: InputTime) => {
 };
 
 /**
- * Creates an array w/ 2 character digits w/ trailing zero, starting from '01'
- * @param untilNumber
- * @returns an array of string
- */
-export const createArray = (untilNumber: number) =>
-    Array.from({ length: untilNumber }, (_, i) =>
-        String(i + 1).padStart(2, "0")
-    );
-
-/**
  * Builds a URL to fetch user data from
  * @param param0 - different query arguments - dates and metering point ids
  */

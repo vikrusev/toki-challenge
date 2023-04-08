@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { UserInput } from "../../../common/dtos/UserInput.dto";
-import { createArray } from "../utils/chart.utils";
 import { METERING_POINTIDS_REGEX, WHITESPACE_REGEX } from "../utils/regex";
-import Dropdown from "./Dropdown";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface IProps {
     disabled: boolean;
@@ -15,12 +16,7 @@ interface IProps {
  * @param param0 - submit event from parent component
  */
 const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
-    // values to be used for the 3 dropdowns
-    const availableDates = {
-        years: ["2022", "2023"],
-        months: createArray(12),
-        days: createArray(31),
-    };
+    const [selectedDate, setSelectedDate] = useState<Date>();
 
     // main properties
     const [formData, setFormData] = useState<UserInput>({
@@ -68,29 +64,45 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
     };
 
     // general handle of input form change
-    const handleChange = (event: any) => {
-        setFormData({ ...formData, [event.target.name]: event.target.value });
+    const handleChange = (date: Date) => {
+        setSelectedDate(date);
     };
 
     return (
         <>
             <form onSubmit={submitRequest}>
-                <Dropdown
-                    type="year"
-                    values={availableDates.years}
+                <DatePicker
+                    selected={selectedDate}
                     onChange={handleChange}
+                    dateFormat="yyyy"
+                    placeholderText="YYYY"
+                    openToDate={new Date("2022/04/01")}
+                    showYearPicker
+                    todayButton="This Year"
+                    maxDate={new Date()}
                 />
-
-                <Dropdown
-                    type="month"
-                    values={availableDates.months}
+                <DatePicker
+                    selected={selectedDate}
                     onChange={handleChange}
+                    dateFormat="MMM-yy"
+                    placeholderText="MMM-YY"
+                    showMonthYearPicker
+                    openToDate={new Date("2022/04/01")}
+                    todayButton="This Month"
+                    maxDate={new Date()}
                 />
-
-                <Dropdown
-                    type="day"
-                    values={availableDates.days}
+                <DatePicker
+                    selected={selectedDate}
                     onChange={handleChange}
+                    dateFormat="dd-MMM-yy"
+                    placeholderText="DD-MM-YY"
+                    openToDate={new Date("2022/04/01")}
+                    todayButton="Today"
+                    maxDate={new Date()}
+                    showMonthDropdown
+                    useShortMonthInDropdown
+                    showYearDropdown
+                    scrollableYearDropdown
                 />
 
                 <label htmlFor="meteringPoints">Metering Point Ids:</label>
@@ -98,6 +110,7 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
                     id="meteringPoints"
                     type="text"
                     name="meteringPointIds"
+                    // @ts-ignore
                     onChange={handleChange}
                 />
 
