@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "jest tests/getPriceUsage.handler.test.ts",
         "compile:prod": "tsc --sourceMap false",
         "compile:debug": "tsc",
         "debug": "node --inspect node_modules/@google-cloud/functions-framework/build/src/main.js --source=./dist/functions --target=mainEntrypoint",
@@ -14,8 +14,11 @@
     "license": "ISC",
     "devDependencies": {
         "@types/express": "^4.17.17",
+        "@types/jest": "^29.5.0",
         "concurrently": "^8.0.1",
+        "jest": "^29.5.0",
         "nodemon": "^2.0.22",
+        "ts-jest": "^29.1.0",
         "typescript": "^5.0.3"
     },
     "dependencies": {
