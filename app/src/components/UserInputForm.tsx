@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
-import { METERING_POINTIDS_REGEX, WHITESPACE_REGEX } from "../utils/regex";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -30,7 +29,9 @@ const UserInputForm: React.FC<IProps> = ({
     );
 
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [meteringPointIds, setMeteringPointIds] = useState<string>("");
+    const [meteringPointIds, setMeteringPointIds] = useState<{
+        [x: string]: boolean;
+    }>({});
 
     // if submit to parent should be executed
     const [shouldExecuteSubmit, setShouldExecuteSubmit] =
@@ -41,14 +42,16 @@ const UserInputForm: React.FC<IProps> = ({
         if (shouldExecuteSubmit) {
             setShouldExecuteSubmit(false);
 
-            // submit data to prent
+            // get an array of checked meteringPointIds
+            const meteringPointIdsStringArray = Object.entries(meteringPointIds)
+                .filter(([pointId, isChecked]) => isChecked)
+                .map(([pointId]) => pointId);
+
+            // submit data to parent
             onSubmit({
                 datetime: selectedDate.getTime(),
                 timeBasis: selectedTimeBasis,
-                meteringPointIds: meteringPointIds?.replace(
-                    WHITESPACE_REGEX,
-                    ""
-                ),
+                meteringPointIds: meteringPointIdsStringArray.join(","),
             });
         }
     }, [
@@ -61,19 +64,7 @@ const UserInputForm: React.FC<IProps> = ({
 
     const submitRequest = (event: any) => {
         event.preventDefault();
-
         if (disabled) return;
-
-        // basic regex check if the metering points are comma seperated numbers
-        if (
-            meteringPointIds &&
-            !METERING_POINTIDS_REGEX.test(meteringPointIds)
-        ) {
-            alert(
-                `Input field for Metering Point Ids must contain comma seperated numbers. Current: ${meteringPointIds}`
-            );
-            return;
-        }
 
         setShouldExecuteSubmit(true);
     };
@@ -81,6 +72,12 @@ const UserInputForm: React.FC<IProps> = ({
     // general handle of input form change
     const handleSelectedDateChange = (date: Date) => {
         setSelectedDate(date);
+    };
+
+    // handle metering point checkbox change
+    const handleMeteringPointCheckboxChange = (event: any) => {
+        const { name, checked } = event.target;
+        setMeteringPointIds((prevState) => ({ ...prevState, [name]: checked }));
     };
 
     return (
@@ -155,14 +152,19 @@ const UserInputForm: React.FC<IProps> = ({
 
                 <div className="metering-points-input">
                     <h3>Metering Point Ids</h3>
-                    <input
-                        id="meteringPoints"
-                        type="text"
-                        name="meteringPointIds"
-                        onChange={(event) =>
-                            setMeteringPointIds(event.target.value)
-                        }
-                    />
+
+                    {["1234", "5678"].map((pointId) => (
+                        <div key={pointId}>
+                            <input
+                                type="checkbox"
+                                id={pointId}
+                                name={pointId}
+                                value={pointId}
+                                onChange={handleMeteringPointCheckboxChange}
+                            />
+                            <label htmlFor={pointId}>{pointId}</label>
+                        </div>
+                    ))}
                 </div>
             </div>
 
