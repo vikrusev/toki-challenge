@@ -9,6 +9,9 @@ interface IProps {
     disabled: boolean;
     onSubmit: (formData: UserInput) => void;
 }
+
+type TimeBasis = "monthly" | "daily" | "hourly";
+
 /**
  * The UserInputForm includes 3 dropdowns for year, month and day respectively
  * The values for them are created here
@@ -17,6 +20,9 @@ interface IProps {
  */
 const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
     const [selectedDate, setSelectedDate] = useState<Date>();
+    const [selectedTimeBasis, setSelectedTimeBasis] = useState<TimeBasis>();
+
+    const timeBasisOptions: TimeBasis[] = ["monthly", "daily", "hourly"];
 
     // main properties
     const [formData, setFormData] = useState<UserInput>({
@@ -71,39 +77,66 @@ const UserInputForm: React.FC<IProps> = ({ disabled, onSubmit }: IProps) => {
     return (
         <>
             <form onSubmit={submitRequest}>
-                <DatePicker
-                    selected={selectedDate}
-                    onChange={handleChange}
-                    dateFormat="yyyy"
-                    placeholderText="YYYY"
-                    openToDate={new Date("2022/04/01")}
-                    showYearPicker
-                    todayButton="This Year"
-                    maxDate={new Date()}
-                />
-                <DatePicker
-                    selected={selectedDate}
-                    onChange={handleChange}
-                    dateFormat="MMM-yy"
-                    placeholderText="MMM-YY"
-                    showMonthYearPicker
-                    openToDate={new Date("2022/04/01")}
-                    todayButton="This Month"
-                    maxDate={new Date()}
-                />
-                <DatePicker
-                    selected={selectedDate}
-                    onChange={handleChange}
-                    dateFormat="dd-MMM-yy"
-                    placeholderText="DD-MM-YY"
-                    openToDate={new Date("2022/04/01")}
-                    todayButton="Today"
-                    maxDate={new Date()}
-                    showMonthDropdown
-                    useShortMonthInDropdown
-                    showYearDropdown
-                    scrollableYearDropdown
-                />
+                <p>Please select time basis:</p>
+
+                {timeBasisOptions.map((basis, index) => (
+                    <div key={index.toString()}>
+                        <label htmlFor={basis}>{basis}</label>
+                        <input
+                            type="radio"
+                            id={basis}
+                            name="time-basis"
+                            value={basis}
+                            onChange={(event) => {
+                                setSelectedTimeBasis(
+                                    event.target.value as TimeBasis
+                                );
+                            }}
+                        />
+                    </div>
+                ))}
+
+                {selectedTimeBasis === "monthly" && (
+                    <DatePicker
+                        selected={selectedDate}
+                        onChange={handleChange}
+                        dateFormat="yyyy"
+                        placeholderText="YYYY"
+                        openToDate={new Date("2022/04/01")}
+                        showYearPicker
+                        todayButton="This Year"
+                        maxDate={new Date()}
+                    />
+                )}
+
+                {selectedTimeBasis === "daily" && (
+                    <DatePicker
+                        selected={selectedDate}
+                        onChange={handleChange}
+                        dateFormat="MMM-yy"
+                        placeholderText="MMM-YY"
+                        showMonthYearPicker
+                        openToDate={new Date("2022/04/01")}
+                        todayButton="This Month"
+                        maxDate={new Date()}
+                    />
+                )}
+
+                {selectedTimeBasis === "hourly" && (
+                    <DatePicker
+                        selected={selectedDate}
+                        onChange={handleChange}
+                        dateFormat="dd-MMM-yy"
+                        placeholderText="DD-MM-YY"
+                        openToDate={new Date("2022/04/01")}
+                        todayButton="Today"
+                        maxDate={new Date()}
+                        showMonthDropdown
+                        useShortMonthInDropdown
+                        showYearDropdown
+                        scrollableYearDropdown
+                    />
+                )}
 
                 <label htmlFor="meteringPoints">Metering Point Ids:</label>
                 <input
