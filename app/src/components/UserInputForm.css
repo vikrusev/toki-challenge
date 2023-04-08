@@ -1,0 +1,48 @@
+#user-input-form-component {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#user-input-form-component .input {
+    width: 50%;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+#user-input-form-component .input .date-input {
+    min-width: 240px;
+    height: 100%;
+}
+
+#user-input-form-component .input .date-input .time-basis {
+    margin-bottom: 10px;
+    text-transform: capitalize;
+}
+
+#user-input-form-component .submit-button {
+    background-color: #4CAF50;
+    color: #eaf3e9;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+#user-input-form-component .submit-button.disabled {
+    background-color: #7ade7a;
+    color: #c8cec8;
+    cursor: not-allowed;
+}
+  
+#user-input-form-component .submit-button:hover {
+    background-color: #3e8e41;
+}
+  
+#user-input-form-component .submit-button:active {
+    background-color: #4CAF50;
+    box-shadow: none;
+    transform: translateY(2px);
+}

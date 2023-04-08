@@ -5,6 +5,8 @@ import { METERING_POINTIDS_REGEX, WHITESPACE_REGEX } from "../utils/regex";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+import "./UserInputForm.css";
+
 interface IProps {
     timeBasisOptions: TimeBasis[];
     disabled: boolean;
@@ -82,81 +84,92 @@ const UserInputForm: React.FC<IProps> = ({
     };
 
     return (
-        <div>
-            <p>Please select time basis:</p>
+        <div id="user-input-form-component">
+            <div className="input">
+                <div className="date-input">
+                    <h3>Please select time basis</h3>
 
-            {timeBasisOptions.map((basis, index) => (
-                <div key={index.toString()}>
-                    <label htmlFor={basis}>{basis}</label>
+                    {timeBasisOptions.map((basis, index) => (
+                        <div className="time-basis" key={index.toString()}>
+                            <input
+                                type="radio"
+                                id={basis}
+                                name="time-basis"
+                                value={basis}
+                                checked={selectedTimeBasis === basis}
+                                onChange={(event) => {
+                                    setSelectedTimeBasis(
+                                        event.target.value as TimeBasis
+                                    );
+                                }}
+                            />
+                            <label htmlFor={basis}>{basis}</label>
+                        </div>
+                    ))}
+
+                    {selectedTimeBasis === "monthly" && (
+                        <DatePicker
+                            selected={selectedDate}
+                            onChange={handleSelectedDateChange}
+                            dateFormat="yyyy"
+                            placeholderText="YYYY"
+                            openToDate={new Date("2022/04/01")}
+                            showYearPicker
+                            todayButton="This Year"
+                            maxDate={new Date()}
+                            inline
+                        />
+                    )}
+
+                    {selectedTimeBasis === "daily" && (
+                        <DatePicker
+                            selected={selectedDate}
+                            onChange={handleSelectedDateChange}
+                            dateFormat="MMM-yy"
+                            placeholderText="MMM-YY"
+                            showMonthYearPicker
+                            openToDate={new Date("2022/04/01")}
+                            todayButton="This Month"
+                            maxDate={new Date()}
+                            inline
+                        />
+                    )}
+
+                    {selectedTimeBasis === "hourly" && (
+                        <DatePicker
+                            selected={selectedDate}
+                            onChange={handleSelectedDateChange}
+                            dateFormat="dd-MMM-yy"
+                            placeholderText="DD-MM-YY"
+                            openToDate={new Date("2022/04/01")}
+                            todayButton="Today"
+                            maxDate={new Date()}
+                            showMonthDropdown
+                            useShortMonthInDropdown
+                            showYearDropdown
+                            scrollableYearDropdown
+                            inline
+                        />
+                    )}
+                </div>
+
+                <div className="metering-points-input">
+                    <h3>Metering Point Ids</h3>
                     <input
-                        type="radio"
-                        id={basis}
-                        name="time-basis"
-                        value={basis}
-                        checked={selectedTimeBasis === basis}
-                        onChange={(event) => {
-                            setSelectedTimeBasis(
-                                event.target.value as TimeBasis
-                            );
-                        }}
+                        id="meteringPoints"
+                        type="text"
+                        name="meteringPointIds"
+                        onChange={(event) =>
+                            setMeteringPointIds(event.target.value)
+                        }
                     />
                 </div>
-            ))}
+            </div>
 
-            {selectedTimeBasis === "monthly" && (
-                <DatePicker
-                    selected={selectedDate}
-                    onChange={handleSelectedDateChange}
-                    dateFormat="yyyy"
-                    placeholderText="YYYY"
-                    openToDate={new Date("2022/04/01")}
-                    showYearPicker
-                    todayButton="This Year"
-                    maxDate={new Date()}
-                    inline
-                />
-            )}
-
-            {selectedTimeBasis === "daily" && (
-                <DatePicker
-                    selected={selectedDate}
-                    onChange={handleSelectedDateChange}
-                    dateFormat="MMM-yy"
-                    placeholderText="MMM-YY"
-                    showMonthYearPicker
-                    openToDate={new Date("2022/04/01")}
-                    todayButton="This Month"
-                    maxDate={new Date()}
-                    inline
-                />
-            )}
-
-            {selectedTimeBasis === "hourly" && (
-                <DatePicker
-                    selected={selectedDate}
-                    onChange={handleSelectedDateChange}
-                    dateFormat="dd-MMM-yy"
-                    placeholderText="DD-MM-YY"
-                    openToDate={new Date("2022/04/01")}
-                    todayButton="Today"
-                    maxDate={new Date()}
-                    showMonthDropdown
-                    useShortMonthInDropdown
-                    showYearDropdown
-                    scrollableYearDropdown
-                    inline
-                />
-            )}
-
-            <label htmlFor="meteringPoints">Metering Point Ids:</label>
-            <input
-                id="meteringPoints"
-                type="text"
-                name="meteringPointIds"
-                onChange={(event) => setMeteringPointIds(event.target.value)}
-            />
-
-            <button disabled={disabled} onClick={submitRequest}>
+            <button
+                className={"submit-button " + (disabled ? "disabled" : "")}
+                onClick={submitRequest}
+            >
                 Submit Request
             </button>
         </div>

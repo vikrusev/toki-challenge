@@ -23,6 +23,8 @@ import {
 } from "../utils/chart.utils";
 import UserInputForm from "./UserInputForm";
 
+import "./Chart.css";
+
 interface IProps {
     title: string;
 }
@@ -99,83 +101,93 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     };
 
     return (
-        <div style={{ position: "relative" }}>
+        <div className="chart-component">
             <h1>{title}</h1>
 
-            <ClipLoader
-                size={150}
-                loading={isLoading}
-                cssOverride={clipLoaderCss}
-            />
+            <div className="user-input">
+                <UserInputForm
+                    timeBasisOptions={timeBasisOptions}
+                    disabled={isLoading}
+                    onSubmit={submitUserInput}
+                />
+            </div>
 
-            <UserInputForm
-                timeBasisOptions={timeBasisOptions}
-                disabled={isLoading}
-                onSubmit={submitUserInput}
-            />
+            <div className="chart-container">
+                <ClipLoader
+                    size={150}
+                    loading={isLoading}
+                    cssOverride={clipLoaderCss}
+                />
 
-            {!combinedData?.length ? (
-                <h2>No data available</h2>
-            ) : (
-                <ResponsiveContainer width="100%" height={700}>
-                    <ComposedChart
-                        width={500}
-                        height={200}
-                        data={combinedData}
-                        syncId="anyId"
-                        margin={{
-                            top: 10,
-                            right: 30,
-                            left: 0,
-                            bottom: 0,
-                        }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                            dataKey="datetimeKey"
-                            tickFormatter={(value) =>
-                                tickFormatter(value, timeBasis)
-                            }
-                        />
-                        <YAxis yAxisId="left" unit="kWh" />
-                        <YAxis yAxisId="right" orientation="right" unit="BGN" />
-                        <Brush
-                            dataKey="datetimeKey"
-                            tickFormatter={(value) =>
-                                tickFormatter(value, timeBasis)
-                            }
-                        />
-                        <Tooltip />
-                        <Legend />
-                        {/* Adding a Bar for each metering point
+                {!combinedData?.length ? (
+                    <div className="no-data">
+                        <h2>No electricity price and usage data available</h2>
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height={700}>
+                        <ComposedChart
+                            width={500}
+                            height={200}
+                            data={combinedData}
+                            syncId="anyId"
+                            margin={{
+                                top: 10,
+                                right: 30,
+                                left: 0,
+                                bottom: 0,
+                            }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                                dataKey="datetimeKey"
+                                tickFormatter={(value) =>
+                                    tickFormatter(value, timeBasis)
+                                }
+                            />
+                            <YAxis yAxisId="left" unit="kWh" />
+                            <YAxis
+                                yAxisId="right"
+                                orientation="right"
+                                unit="BGN"
+                            />
+                            <Brush
+                                dataKey="datetimeKey"
+                                tickFormatter={(value) =>
+                                    tickFormatter(value, timeBasis)
+                                }
+                            />
+                            <Tooltip />
+                            <Legend />
+                            {/* Adding a Bar for each metering point
                         from the user input that exists in the data */}
-                        {meteringPointIds.map((el, index) => {
-                            return (
-                                combinedData.some((e) =>
-                                    e.hasOwnProperty(el)
-                                ) && (
-                                    <Bar
-                                        key={index}
-                                        barSize={20}
-                                        yAxisId="left"
-                                        dataKey={el}
-                                        fill={chartDataColors[index]}
-                                    />
-                                )
-                            );
-                        })}
-                        <Line
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey="electricityPrice"
-                            stroke="#0000FF"
-                            strokeWidth={4}
-                            activeDot={{ r: 8 }}
-                            connectNulls
-                        />
-                    </ComposedChart>
-                </ResponsiveContainer>
-            )}
+                            {meteringPointIds.map((el, index) => {
+                                return (
+                                    combinedData.some((e) =>
+                                        e.hasOwnProperty(el)
+                                    ) && (
+                                        <Bar
+                                            key={index}
+                                            barSize={20}
+                                            yAxisId="left"
+                                            dataKey={el}
+                                            fill={chartDataColors[index]}
+                                        />
+                                    )
+                                );
+                            })}
+                            <Line
+                                yAxisId="right"
+                                type="monotone"
+                                dataKey="electricityPrice"
+                                stroke="#0000FF"
+                                strokeWidth={4}
+                                activeDot={{ r: 8 }}
+                                connectNulls
+                            />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
         </div>
     );
 };
