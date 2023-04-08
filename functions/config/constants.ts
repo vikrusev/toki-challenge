@@ -16,6 +16,11 @@ export const POINTID_REGEX = /(\d+)\.jsonl$/;
 //e.g. we can get `2022/04/1` from usage/2022/04/1/1234.jsonl or prices/2022/04/01.jsonl
 export const YEAR_MONTH_DAY_REGEX = /(\d{4})\/(\d{2})\/((\d{2})|(\d{1}))/;
 
+// regex to catch a string representation of array elements joined w/ `,`
+// example: '1,2,3,4' is valid, '1, 2,3' is invalid because of the space
+// '[1,2,3]' is invalid because of the brackets
+export const ARRAY_JOIN_COMMA = /^\d+(?:,\d+)*$/;
+
 // inital prefixes of files in the Cloud Storage
 export const FILEPATH_PREFIXES = {
     prices: "prices",
