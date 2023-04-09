@@ -41,6 +41,32 @@ const convertRawUsageAndPricesDataToJson = (
 };
 
 /**
+ * Make structure of Price and Usage objects the same
+ * They should both have a field for  "time" and a field for "price"
+ */
+const unifyPricesAndUsageData = (
+    files: JsonConvertedData[]
+): UnifiedPriceUsage[] => {
+    return files.flatMap(({ filename, parsedData }) => {
+        // the "price" field in price entries should be 'electricityPrice'
+        if (isPricesDataArray(parsedData)) {
+            return parsedData.map((data) => ({
+                datetime: data.timestamp,
+                electricityPrice: data.price,
+            }));
+        }
+
+        // we are sure that there is a match, because the non-isPricesData
+        // files have pointId in the end of the filename
+        const pointId = filename.match(POINTID_REGEX)?.[1] || "unknown";
+        return (parsedData as Usage[]).map((data) => ({
+            datetime: data.timestamp,
+            [pointId]: data.kwh,
+        }));
+    });
+};
+
+/**
  * Groups data based on @param timeBasis
  * Either on Hourly, Daily or Monthly basis
  * Also, adds a property datetimeKey of the key data was grouped by
@@ -107,32 +133,6 @@ const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
             };
         }
     );
-};
-
-/**
- * Make structure of Price and Usage objects the same
- * They should both have a field for  "time" and a field for "price"
- */
-const unifyPricesAndUsageData = (
-    files: JsonConvertedData[]
-): UnifiedPriceUsage[] => {
-    return files.flatMap(({ filename, parsedData }) => {
-        // the "price" field in price entries should be 'electricityPrice'
-        if (isPricesDataArray(parsedData)) {
-            return parsedData.map((data) => ({
-                datetime: data.timestamp,
-                electricityPrice: data.price,
-            }));
-        }
-
-        // we are sure that there is a match, because the non-isPricesData
-        // files have pointId in the end of the filename
-        const pointId = filename.match(POINTID_REGEX)?.[1] || "unknown";
-        return (parsedData as Usage[]).map((data) => ({
-            datetime: data.timestamp,
-            [pointId]: data.kwh,
-        }));
-    });
 };
 
 /**
