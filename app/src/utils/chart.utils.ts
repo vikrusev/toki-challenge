@@ -71,7 +71,12 @@ export const buildFetchUrl = ({
     timeBasis,
     meteringPointIds,
 }: UserInput) => {
-    let url = `http://localhost:8080/?datetime=${datetime}&timeBasis=${timeBasis}`;
+    const functionDomain =
+        process.env.NODE_ENV === "production"
+            ? process.env.REACT_APP_CLOUD_FUNCTION_URL
+            : "http://localhost:8080";
+
+    let url = `${functionDomain}/?datetime=${datetime}&timeBasis=${timeBasis}`;
 
     if (meteringPointIds) url += `&meteringPointIds=${meteringPointIds}`;
 

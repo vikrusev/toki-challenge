@@ -7,6 +7,8 @@ services:
             context: .
             dockerfile: ./functions/Dockerfile
         restart: on-failure:5
+        environment:
+            - NODE_ENV=production
         expose:
             - 8080
     app:

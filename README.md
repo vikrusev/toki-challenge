@@ -2,6 +2,13 @@
 
 **TOKI Take Home Full Stack Challenge**
 
+## Prerequisites
+
+Optional
+
+* docker
+* docker-compose
+
 ## Main Characteristics
 
 * backend consists of a Google `Cloud Function`
@@ -15,7 +22,7 @@
 * frontend is written in `ReactJS`
     * charts are using `recharts`
         * the period of data in the charts can be adjusted via the `UI`
-    * the client can view *Yearly*, *Monthly* or *Daily* data
+    * the client can view *Monthly*, *Daily* or *Hourly* data
         * w/ prices of the electrcity
         * or usage by the facilities he/her owns
             * the client can choose which facilities to be displayed
@@ -33,6 +40,12 @@
 
 * clone the project
     * `git clone https://github.com/vikrusev/toki-challenge.git`
+* go to the root directory of the project
+    * `cd toki-challenge`
+* run Docker containers w/ the default `docker-compose.yml` config file
+    * `docker-compose up -d`
+
+ReactJS App should be available at `localhost:3000`
 
 ### Start the Frontend
 
