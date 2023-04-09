@@ -41,7 +41,9 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
 
     // data for charts
-    const [combinedData, setCombinedData] = useState<PricesUsageData[]>([]);
+    const [pricesUsageData, setPricesUsageData] = useState<PricesUsageData[]>(
+        []
+    );
 
     // url to fetch data from
     const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
@@ -65,7 +67,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
             const responseJson: ClientResponse = JSON.parse(
                 (await response.json()).body
             );
-            setCombinedData(responseJson.pricesUsageData);
+            setPricesUsageData(responseJson.pricesUsageData);
         } finally {
             setIsLoading(false);
         }
@@ -126,7 +128,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                     cssOverride={clipLoaderCss}
                 />
 
-                {!combinedData?.length ? (
+                {!pricesUsageData?.length ? (
                     !isLoading && (
                         <div className="no-data">
                             <h2>
@@ -139,7 +141,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         <ComposedChart
                             width={500}
                             height={200}
-                            data={combinedData}
+                            data={pricesUsageData}
                             syncId="anyId"
                             margin={{
                                 top: 10,
@@ -182,7 +184,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                         from the user input that exists in the data */}
                             {meteringPointIds.map((el, index) => {
                                 return (
-                                    combinedData.some((e) =>
+                                    pricesUsageData.some((e) =>
                                         e.hasOwnProperty(el)
                                     ) && (
                                         <Bar
