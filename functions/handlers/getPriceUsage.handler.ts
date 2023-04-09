@@ -3,6 +3,7 @@ import getStorageOptions from "../config/getStorageOptions";
 import validationSchema from "../business/validators/userInput.validator";
 import evaluateInformation from "../business/evaluateInformation";
 import { BadRequestException } from "../utils/exceptions";
+import findIncreasedPriceCycles from "../business/findIncreasedPriceCycles";
 
 /**
  * Retrieve data from usage and prices objects from TOKI's Google Cloud Storage Bucket
@@ -42,8 +43,16 @@ const getPriceUsageData = async ({ query: userInput }: any) => {
     // evaluate requested data
     const clientData = evaluateInformation(requestedData, userInput.timeBasis);
 
+    // find cycles of increased electricity price to provide suggestions for cutting cost
+    const increasedPriceCycles = findIncreasedPriceCycles(
+        clientData.map((el) => el.electricityPrice)
+    );
+
     // send final information to client
-    return clientData;
+    return {
+        clientData,
+        increasedPriceCycles,
+    };
 };
 
 export default getPriceUsageData;
