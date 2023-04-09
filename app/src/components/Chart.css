@@ -6,6 +6,18 @@ h1 {
     margin-bottom: 20px;
 }
 
+#price-cut-suggestions {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#price-cut-suggestions .suggestions-list {
+    width: 50%;
+    margin: 0 auto;
+    max-height: 200px;
+    overflow: auto;
+}
+
 .no-data {
     display: flex;
     align-items: center;

@@ -12,12 +12,10 @@ import {
     ComposedChart,
     Bar,
     Legend,
+    ReferenceLine,
 } from "recharts";
 
-import {
-    ClientResponse,
-    PricesUsageData,
-} from "../../../common/dtos/ClientResponse.dto";
+import { ClientResponse } from "../../../common/dtos/ClientResponse.dto";
 import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
 import {
     buildFetchUrl,
@@ -41,9 +39,14 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
 
     // data for charts
-    const [pricesUsageData, setPricesUsageData] = useState<PricesUsageData[]>(
-        []
-    );
+    const [pricesUsageData, setPricesUsageData] = useState<
+        ClientResponse["pricesUsageData"]
+    >([]);
+
+    // cycles to provide suggestions on
+    const [increasedPriceCycles, setIncreasedPriceCycles] = useState<
+        ClientResponse["increasedPriceCycles"]
+    >([]);
 
     // url to fetch data from
     const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
@@ -68,6 +71,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                 (await response.json()).body
             );
             setPricesUsageData(responseJson.pricesUsageData);
+            setIncreasedPriceCycles(responseJson.increasedPriceCycles);
         } finally {
             setIsLoading(false);
         }
@@ -119,6 +123,33 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                     onSubmit={submitUserInput}
                 />
             </div>
+
+            {pricesUsageData?.length > 0 && (
+                <div id="price-cut-suggestions">
+                    <h1>Suggestions to reduce costs</h1>
+                    {!increasedPriceCycles.length ? (
+                        <h4>No available suggestions for this date period</h4>
+                    ) : (
+                        <div className="suggestions-list">
+                            {increasedPriceCycles.map((el, index) => (
+                                <h4 key={index}>
+                                    #{index + 1} High electricity price detected
+                                    between{" "}
+                                    {tickFormatter(
+                                        pricesUsageData[el.start].datetimeKey,
+                                        timeBasis
+                                    )}{" "}
+                                    and{" "}
+                                    {tickFormatter(
+                                        pricesUsageData[el.end].datetimeKey,
+                                        timeBasis
+                                    )}
+                                </h4>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div id="chart-container">
                 <ClipLoader
