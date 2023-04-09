@@ -45,7 +45,8 @@ const getPriceUsageData = async ({ query: userInput }: any) => {
 
     // find cycles of increased electricity price to provide suggestions for cutting cost
     const increasedPriceCycles = findIncreasedPriceCycles(
-        clientData.map((el) => el.electricityPrice)
+        clientData.map((el) => el.electricityPrice),
+        userInput.timeBasis
     );
 
     // send final information to client

@@ -1,9 +1,15 @@
+import { TimeBasis } from "../../common/dtos/UserInput.dto";
+
 export interface IncreasedPriceCycle {
     start: number;
     end: number;
 }
 
-const findIncreasedPriceCycles = (values: number[], threshold = 30) => {
+const findIncreasedPriceCycles = (values: number[], timeBasis: TimeBasis) => {
+    // time basis is defining the threshold
+    const threshold =
+        timeBasis === "monthly" ? 70 : timeBasis === "daily" ? 50 : 30;
+
     // early exit when no data is given
     if (!values?.length) {
         return [];
