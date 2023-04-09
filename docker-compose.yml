@@ -7,16 +7,14 @@ services:
             context: .
             dockerfile: ./functions/Dockerfile
         restart: on-failure:5
-        ports:
-            - 8080:8080
+        expose:
+            - 8080
     app:
         image: react-app
         build:
             context: .
             dockerfile: ./app/Dockerfile
         restart: on-failure:5
-        expose:
-            - 3000
         ports:
             - 3000:3000
         depends_on:
