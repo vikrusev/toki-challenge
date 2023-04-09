@@ -1,7 +1,6 @@
 import { POINTID_REGEX } from "../config/constants";
 import {
     DownloadedCloudFile,
-    Price,
     Usage,
     JsonConvertedData,
     UnifiedPriceUsage,
@@ -71,7 +70,7 @@ const unifyPricesAndUsageData = (
  * Either on Hourly, Daily or Monthly basis
  * Also, adds a property datetimeKey of the key data was grouped by
  */
-const groupByTimeInput = (
+const groupByTimeBasis = (
     data: UnifiedPriceUsage[],
     timeBasis: TimeBasis
 ): AggregatedData[] => {
@@ -139,9 +138,9 @@ const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
  * Read and evalue downloaded cloud file information
  *
  * @param files - downloaded prices and usage data files
- * @param timeInput - times provided by the user input, year is not needed
+ * @param timeBasis - times provided by the user input, year is not needed
  * @returns an array w/ transformed cloud information to frontend-based structure
- *  - Monthly, Daily or Hourly averages are calculated based on @param timeInput
+ *  - Monthly, Daily or Hourly averages are calculated based on @param timeBasis
  */
 const evaluateInformation = (
     files: DownloadedCloudFile[],
@@ -154,7 +153,7 @@ const evaluateInformation = (
     const standardizedData = unifyPricesAndUsageData(parsedFiles);
 
     // get simple objects of prices and usage w/ Monthly, Daily or Hourly values
-    const groupedEntries = groupByTimeInput(standardizedData, timeBasis);
+    const groupedEntries = groupByTimeBasis(standardizedData, timeBasis);
 
     // calculate average prices and usage values
     return calculateAverageValues(groupedEntries);
