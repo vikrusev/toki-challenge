@@ -14,7 +14,7 @@ import {
     Legend,
 } from "recharts";
 
-import { ClientResponse } from "../../../common/response.types";
+import { ClientResponse } from "../../../common/dtos/ClientResponse.dto";
 import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
 import {
     buildFetchUrl,

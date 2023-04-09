@@ -7,7 +7,7 @@ import {
     AggregatedData,
 } from "../types/information.types";
 import { TimeBasis } from "../../common/dtos/UserInput.dto";
-import { ClientResponse } from "../../common/response.types";
+import { ClientResponse } from "../../common/dtos/ClientResponse.dto";
 import {
     getGroupKey,
     getArrayAverage,
