@@ -4,31 +4,36 @@
 
 ## Prerequisites
 
-Optional
+**Required**
 
-* docker
-* docker-compose
+* you should have received a URL for the cloud function
+* you should have received a file `toki-challenge-service-account.json`
+
+**Optional**
+
+* you have `Docker` and `docker-compose` installed
 
 ## Main Characteristics
 
 * backend consists of a Google `Cloud Function`
-    * TOKI's account for accessing their data is stored in `Google Secret Manager`
-        * if run locally, the function makes a request to the `Secret Manager`
-        * if run in production environment, the account secret is mounted as volume
-            * it is then read in directly by as if it is a file
+    * in order to keep service accounts a secret
+        * TOKI's account for accessing their data is stored in `Google Secret Manager`
+            * if the backend is run locally, the *function* makes a request to the `Secret Manager`
+            * if run in production environment, the account secret is mounted as volume
+                * it is then read in directly by as if it is a file
     * there is a `Cloud Trigger` on `push` event to the `main` branch
         * automated CI/CD Pipeline is started
             * using `Cloud Build` and `Cloud Run`
-* frontend is written in `ReactJS`
-    * charts are using `recharts`
-        * the period of data in the charts can be adjusted via the `UI`
+* frontend is written in `ReactJS` in order to respect TOKI's tech stack
+    * chart is using `recharts`
+        * the period of data in the charts can be adjusted via the UI w/ a `brush`
     * the client can view *Monthly*, *Daily* or *Hourly* data
         * w/ prices of the electrcity
-        * or usage by the facilities he/her owns
+        * or usage by the facilities he/she owns
             * the client can choose which facilities to be displayed
-    * *Yearly* data shows aggregated and averaged *Monthly* data
-    * *Monthly* data shows aggregated and averaged *Daily* data
-    * *Daily* data shows raw data which is in *Hours*
+    * *Monthly* data shows aggregated and averaged *Monthly* data
+    * *Daily* data shows aggregated and averaged *Daily* data
+    * *Hourly* data shows raw data which is in *Hours*
 
 ## Project Structure
 
@@ -42,6 +47,9 @@ Optional
     * `git clone https://github.com/vikrusev/toki-challenge.git`
 * go to the root directory of the project
     * `cd toki-challenge`
+* copy `toki-challenge-service-account.json` in `./functions`
+* add an `./app/.env` file w/ variable *(or copy the .env.example)*
+    * REACT_APP_CLOUD_FUNCTION_URL=<cloud-function-url>
 * run Docker containers w/ the default `docker-compose.yml` config file
     * `docker-compose up -d`
 
@@ -55,15 +63,8 @@ ReactJS App should be available at `localhost:3000`
     * `npm ci`
 * run the fronend
     * `npm start`
-* visit `localhost:3000` in your browser
-    * choose *year*, *month* and *day*
-        * *month* and *day* '00' are considered as `null`
-    * fill in *Metering Point Ids*
-        * should be a comma seperated list of meterin points that you want to check
-            * available from TOKI are `1234` and `5678`
-    * click the `Submit` button
-        * wait a moment for the data to load :)
-            * adding a loading spinner is a **TODO**
+
+ReactJS App should be available at `localhost:3000`
 
 ### Start the Backend
 
@@ -74,16 +75,22 @@ ReactJS App should be available at `localhost:3000`
 * run the backend
     * `npm run watch`
 
+### How to use the App
+
+* visit `localhost:3000` in your browser
+    * choose *Time Basis*
+        * different `react-datepicker` calendars will be shown
+        * choose the desired date
+    * select some of the available *Metering Point Ids*
+    * click the *Send Request* button
+        * wait a moment for the data to load :)
+    * a `recharts` chart should be shown
+        * the blue line is the price of *Electricity* thourghout the time period
+        * differently colored bars are the *Metering Points*
+        * there is a recharts `brush` beneath the chart
+            * it is used to interactively change the time period to be seen
+
 ## TODO
 
+* more `Unit Tests`
 * algorithm to suggest how to cut costs based on the provided data
-* Unit Tests
-* `X-Axis` datetime when viewing data for a single day should be parsed
-* move `frontend` user input interface to a seperate component
-    * loading spinner on submit button click
-    * improve frontend design
-* improve error handling system
-* improve `README` documentation
-* most types in `/common/data.types.ts` should be moved to `/functions`
-* a simple `Docker` setup can be implemented
-* etc
