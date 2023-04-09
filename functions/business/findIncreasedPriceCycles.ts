@@ -5,7 +5,40 @@ export interface IncreasedPriceCycle {
     end: number;
 }
 
-const findIncreasedPriceCycles = (values: number[], timeBasis: TimeBasis) => {
+/**
+ * Prolong cycles which end w/ a point which is right before
+ * the starting point of the next cycle
+ * Example
+ *   [{ start: 2, end: 10 },{ start: 14, end: 16 },{ start: 17, end: 20 },{ start: 22, end: 23 }]
+ *   becomes
+ *   { start: 2, end: 10 }, { start: 14, end: 20 }, { start: 22, end: 23 }]
+ */
+const mergeAdjacentCycles = (cycles: IncreasedPriceCycle[]) => {
+    const mergedCycles: IncreasedPriceCycle[] = [];
+
+    for (let i = 0; i < cycles.length; i++) {
+        const currentObj = cycles[i];
+        const nextObj = cycles[i + 1];
+
+        if (nextObj && currentObj.end === nextObj.start - 1) {
+            currentObj.end = nextObj.end;
+            ++i;
+        }
+        mergedCycles.push(currentObj);
+    }
+
+    return mergedCycles;
+};
+
+/**
+ * Find cycles w/ start of increasing and the corresponding end of decreasing in prices
+ * @param values of electricity price
+ * @param timeBasis used to define the threshold
+ */
+const findIncreasedPriceCycles = (
+    values: number[],
+    timeBasis: TimeBasis
+): IncreasedPriceCycle[] => {
     // time basis is defining the threshold
     const threshold =
         timeBasis === "monthly" ? 70 : timeBasis === "daily" ? 50 : 30;
@@ -55,7 +88,7 @@ const findIncreasedPriceCycles = (values: number[], timeBasis: TimeBasis) => {
         bigIncreaseCycles.push({ start, end: values.length - 1 });
     }
 
-    return bigIncreaseCycles;
+    return mergeAdjacentCycles(bigIncreaseCycles);
 };
 
 export default findIncreasedPriceCycles;
