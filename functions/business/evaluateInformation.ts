@@ -64,21 +64,15 @@ const convertRawUsageAndPricesDataToJson = (
 };
 
 /**
- * Groups data based on @param timeInput
+ * Groups data based on @param timeBasis
  * Either on Hourly, Daily or Monthly basis
  * Also, adds a property datetimeKey of the key data was grouped by
- * @param timeInput - month and day are both optional, used to define the group key
- *  - if month is not given - group on Monthly basis
- *  - if month is given, day is not - group on Daily basis
- *  - if month and day are given - group on Hourly basis
  */
 const groupByTimeInput = (
     data: UnifiedPriceUsage[],
     timeBasis: TimeBasis
 ): AggregatedData[] => {
-    // use reduce to get an object w/ keys a group key
-    // and value an object of datetime, array of electricity prices
-    // and eventually arrays of the available metering points
+    // get an object w/ keys - groupKey and value of a aggregated Price or Usage values
     const result = data.reduce(
         (acc, { electricityPrice, datetime, ...pointIdDatas }) => {
             const date = new Date(datetime);
@@ -112,13 +106,14 @@ const groupByTimeInput = (
 };
 
 /**
- * Calculate average electricity price and metering points values for each Hour / Day / Month
+ * Calculate average electricity price and metering points values for each Month / Hour / Day
  */
 const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
     return data.map(
         ({ datetimeKey, datetime, electricityPrice, ...pointIdData }) => {
             const averageElectricityPrice = getArrayAverage(electricityPrice);
 
+            // averaged usage data
             const averagedPointIdData = Object.entries(pointIdData).reduce(
                 (acc, [pointId, values]) => ({
                     ...acc,
@@ -138,7 +133,8 @@ const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
 };
 
 /**
- * Prices and Usage data should have a "time" and "price" fields
+ * Make structure of Price and Usage objects the same
+ * They should both have a field for  "time" and a field for "price"
  */
 const unifyPricesAndUsageData = (
     files: JsonConvertedData[]

@@ -97,6 +97,7 @@ class CloudStorageClient {
 
         const [month, day] = [date.getMonth() + 1, date.getDate()];
 
+        // decide what parts to add based on the timeBasis
         if (timeBasis === "daily") prefix += `/${addPadding(month)}`;
 
         if (timeBasis === "hourly") {
