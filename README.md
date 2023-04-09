@@ -6,8 +6,10 @@
 
 **Required**
 
-* you should have received a URL for the cloud function
+* you should have received a `.env` file
+    * it contains a variable w/ the URL for the `Cloud Function`
 * you should have received a file `toki-challenge-service-account.json`
+    * this is service account for the used `Google Cloud Function`
 
 **Optional**
 
@@ -31,9 +33,12 @@
         * w/ prices of the electrcity
         * or usage by the facilities he/she owns
             * the client can choose which facilities to be displayed
-    * *Monthly* data shows aggregated and averaged *Monthly* data
-    * *Daily* data shows aggregated and averaged *Daily* data
-    * *Hourly* data shows raw data which is in *Hours*
+        * *Monthly* data shows aggregated and averaged *Monthly* data
+        * *Daily* data shows aggregated and averaged *Daily* data
+        * *Hourly* data shows raw data which is in *Hours*
+    * the client can see *Suggestions* on how to reduce costs
+        * this is based on an algorithm which finds from when until when electricity price is in a "peak"
+            * this is called a `PricesIncreasedCycle`
 
 ## Project Structure
 
@@ -93,4 +98,3 @@ ReactJS App should be available at `localhost:3000`
 ## TODO
 
 * more `Unit Tests`
-* algorithm to suggest how to cut costs based on the provided data
