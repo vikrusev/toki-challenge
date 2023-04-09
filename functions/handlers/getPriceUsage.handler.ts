@@ -40,7 +40,7 @@ const getPriceUsageData = async ({ query: userInput }: any) => {
     const requestedData = await cloudStorageClient.getUserData(userInput);
 
     // evaluate requested data
-    const clientData = evaluateInformation(requestedData, userInput);
+    const clientData = evaluateInformation(requestedData, userInput.timeBasis);
 
     // send final information to client
     return clientData;

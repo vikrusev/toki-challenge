@@ -7,7 +7,7 @@ import {
     UnifiedPriceUsage,
     AggregatedData,
 } from "../types/information.types";
-import { TimeBasis, UserInput } from "../../common/dtos/UserInput.dto";
+import { TimeBasis } from "../../common/dtos/UserInput.dto";
 import { ClientResponse } from "../../common/response.types";
 import {
     getGroupKey,
@@ -143,9 +143,9 @@ const unifyPricesAndUsageData = (
  * @returns an array w/ transformed cloud information to frontend-based structure
  *  - Monthly, Daily or Hourly averages are calculated based on @param timeInput
  */
-const evaluateRequestedData = (
+const evaluateInformation = (
     files: DownloadedCloudFile[],
-    { datetime, timeBasis }: UserInput
+    timeBasis: TimeBasis
 ): ClientResponse[] => {
     // convert data to JS objects
     const parsedFiles = convertRawUsageAndPricesDataToJson(files);
@@ -160,4 +160,4 @@ const evaluateRequestedData = (
     return calculateAverageValues(groupedEntries);
 };
 
-export default evaluateRequestedData;
+export default evaluateInformation;
