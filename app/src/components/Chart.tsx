@@ -14,7 +14,10 @@ import {
     Legend,
 } from "recharts";
 
-import { ClientResponse } from "../../../common/dtos/ClientResponse.dto";
+import {
+    ClientResponse,
+    PricesUsageData,
+} from "../../../common/dtos/ClientResponse.dto";
 import { TimeBasis, UserInput } from "../../../common/dtos/UserInput.dto";
 import {
     buildFetchUrl,
@@ -38,7 +41,7 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
     const [meteringPointIds, setMeteringPointIds] = useState<string[]>([]);
 
     // data for charts
-    const [combinedData, setCombinedData] = useState<ClientResponse[]>([]);
+    const [combinedData, setCombinedData] = useState<PricesUsageData[]>([]);
 
     // url to fetch data from
     const [fetchDataUrl, setFetchDataUrl] = useState<string>("");
@@ -59,8 +62,10 @@ const Chart: React.FC<IProps> = ({ title }: IProps) => {
                 throw new Error(response.statusText);
             }
 
-            const responseJson = await response.json();
-            setCombinedData(JSON.parse(responseJson.body));
+            const responseJson: ClientResponse = JSON.parse(
+                (await response.json()).body
+            );
+            setCombinedData(responseJson.pricesUsageData);
         } finally {
             setIsLoading(false);
         }

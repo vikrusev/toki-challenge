@@ -41,17 +41,20 @@ const getPriceUsageData = async ({ query: userInput }: any) => {
     const requestedData = await cloudStorageClient.getUserData(userInput);
 
     // evaluate requested data
-    const clientData = evaluateInformation(requestedData, userInput.timeBasis);
+    const pricesUsageData = evaluateInformation(
+        requestedData,
+        userInput.timeBasis
+    );
 
     // find cycles of increased electricity price to provide suggestions for cutting cost
     const increasedPriceCycles = findIncreasedPriceCycles(
-        clientData.map((el) => el.electricityPrice),
+        pricesUsageData.map((el) => el.electricityPrice),
         userInput.timeBasis
     );
 
     // send final information to client
     return {
-        clientData,
+        pricesUsageData,
         increasedPriceCycles,
     };
 };

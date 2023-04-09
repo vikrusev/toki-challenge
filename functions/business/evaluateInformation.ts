@@ -7,7 +7,10 @@ import {
     AggregatedData,
 } from "../types/information.types";
 import { TimeBasis } from "../../common/dtos/UserInput.dto";
-import { ClientResponse } from "../../common/dtos/ClientResponse.dto";
+import {
+    ClientResponse,
+    PricesUsageData,
+} from "../../common/dtos/ClientResponse.dto";
 import {
     getGroupKey,
     getArrayAverage,
@@ -110,7 +113,7 @@ const groupByTimeBasis = (
 /**
  * Calculate average electricity price and metering points values for each Month / Hour / Day
  */
-const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
+const calculateAverageValues = (data: AggregatedData[]): PricesUsageData[] => {
     return data.map(
         ({ datetimeKey, datetime, electricityPrice, ...pointIdData }) => {
             const averageElectricityPrice = getArrayAverage(electricityPrice);
@@ -145,7 +148,7 @@ const calculateAverageValues = (data: AggregatedData[]): ClientResponse[] => {
 const evaluateInformation = (
     files: DownloadedCloudFile[],
     timeBasis: TimeBasis
-): ClientResponse[] => {
+): PricesUsageData[] => {
     // convert data to JS objects
     const parsedFiles = convertRawUsageAndPricesDataToJson(files);
 
